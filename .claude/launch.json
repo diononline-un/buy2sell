@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Buy2Sell (Docker)",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up", "--build"],
+      "port": 3000
+    },
+    {
+      "name": "Next.js Dev Server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "Prisma Studio",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "db:studio"],
+      "port": 5555
+    },
+    {
+      "name": "PostgreSQL (Docker)",
+      "runtimeExecutable": "docker-compose",
+      "runtimeArgs": ["up", "db"],
+      "port": 5432
+    }
+  ]
+}

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entscheidung 7: Label-PDF-Generation — Buy2Sell</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #ede9fe; color: #6d28d9; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eff6ff; color: #1d4ed8; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #bfdbfe; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #6366f1; box-shadow: 0 4px 20px rgba(99,102,241,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #7c3aed; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+    .visual-preview { padding: 1.5rem; background: #f8fafc; min-height: 200px; display: flex; align-items: center; justify-content: center; flex: 1; }
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; }
+    .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0; padding-left: 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-claude { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; position: sticky; top: 0; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #7c3aed; }
+    .comparison-table th.col-b { color: #0891b2; }
+    .comparison-table th.col-c { color: #059669; }
+    .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table .col-recommended { background: #fffbeb !important; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #6366f1; text-decoration: none; max-width: 1200px; }
+    .back-link:hover { text-decoration: underline; }
+    /* Label preview */
+    .label-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; max-width: 300px; }
+    .label-mock { background: white; border: 2px dashed #cbd5e1; border-radius: 6px; padding: 8px; text-align: center; aspect-ratio: 2/1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .label-id { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.7rem; font-weight: 800; color: #0f172a; }
+    .label-title { font-size: 0.5rem; color: #64748b; font-weight: 600; }
+    .label-qr { width: 28px; height: 28px; background: #1e293b; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+    .label-qr-inner { width: 22px; height: 22px; background: white; border-radius: 2px; display: grid; grid-template-columns: repeat(5,1fr); grid-template-rows: repeat(5,1fr); gap: 1px; padding: 1px; }
+    .qr-cell { border-radius: 0.5px; }
+    .qr-cell.dark { background: #1e293b; }
+    .qr-cell.light { background: white; }
+    .arch-diagram { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0.5rem; width: 100%; }
+    .arch-layer { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; width: 100%; }
+    .arch-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 14px; font-size: 0.7rem; font-weight: 600; color: #334155; text-align: center; min-width: 70px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .arch-box.frontend { border-color: #7c3aed; color: #7c3aed; }
+    .arch-box.backend { border-color: #0891b2; color: #0891b2; }
+    .arch-box.database { border-color: #059669; color: #059669; }
+    .arch-box.service { border-color: #dc2626; color: #dc2626; }
+    .arch-arrow { font-size: 1rem; color: #94a3b8; text-align: center; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← Alle Entscheidungen</a>
+  <header>
+    <span class="decision-number">Entscheidung 7 von 7</span>
+    <h1>Label-PDF-Generation</h1>
+    <span class="category-badge technical">Technisch</span>
+    <p class="decision-description">
+      Du willst pro Haul ein PDF mit Labels (4x8 Inch) generieren, die eine Unique-ID pro Artikel enthalten. Diese Labels klebst du auf deine voreingepackten Artikel. Frage: Wie generieren wir das PDF und was steht auf dem Label?
+    </p>
+    <p class="instruction">
+      Sag Claude: <strong>"Option B"</strong> · <strong>"Option A aber [Änderung]"</strong> · <strong>"Mehr Optionen"</strong>
+    </p>
+  </header>
+
+  <main class="options-grid">
+    <!-- Option A: Server-side PDF (react-pdf) -->
+    <article class="option-card option-a chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option A</span>
+          <div class="card-badges">
+            <span class="recommended-badge">Empfohlen</span>
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">@react-pdf/renderer (Server-side)</h2>
+      </div>
+      <div class="visual-preview">
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 280px;">
+          <div style="font-size: 0.5rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em;">Label-Preview (4x8 inch)</div>
+          <div class="label-grid">
+            <div class="label-mock">
+              <div class="label-qr"><div class="label-qr-inner"><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell light"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell light"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div></div></div>
+              <div class="label-id">B2S-H3-001</div>
+              <div class="label-title">Dunk Low Panda · 42</div>
+            </div>
+            <div class="label-mock">
+              <div class="label-qr"><div class="label-qr-inner"><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div></div></div>
+              <div class="label-id">B2S-H3-002</div>
+              <div class="label-title">AJ1 Chicago · 43</div>
+            </div>
+            <div class="label-mock">
+              <div class="label-qr"><div class="label-qr-inner"><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div></div></div>
+              <div class="label-id">B2S-H3-003</div>
+              <div class="label-title">Yeezy 350 · 44</div>
+            </div>
+            <div class="label-mock">
+              <div class="label-qr"><div class="label-qr-inner"><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div><div class="qr-cell dark"></div><div class="qr-cell dark"></div><div class="qr-cell light"></div></div></div>
+              <div class="label-id">B2S-H3-004</div>
+              <div class="label-title">NB 550 Green · 41</div>
+            </div>
+          </div>
+          <div class="arch-diagram" style="gap: 4px; padding: 0;">
+            <div class="arch-layer"><div class="arch-box backend" style="font-size: 0.6rem; padding: 4px 10px;">API Route: /api/labels/[haulId]</div></div>
+            <div class="arch-arrow" style="font-size: 0.8rem;">↓</div>
+            <div class="arch-layer">
+              <div class="arch-box service" style="font-size: 0.6rem; padding: 4px 10px;">@react-pdf/renderer</div>
+              <div class="arch-box service" style="font-size: 0.6rem; padding: 4px 10px;">qrcode</div>
+            </div>
+            <div class="arch-arrow" style="font-size: 0.8rem;">↓</div>
+            <div class="arch-layer"><div class="arch-box database" style="font-size: 0.6rem; padding: 4px 10px;">PDF Stream → Download</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        @react-pdf/renderer generiert PDFs server-side in deiner API Route. Du definierst das Label-Layout als React-Komponenten (JSX), generierst QR-Codes mit der qrcode-Library, und streamst das PDF als Download. Gleiche Sprache (React/JSX) wie dein Frontend. Labels: QR-Code (scannbar → öffnet Artikel in der App), ID, Kurzname, Variante.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>React-Syntax für PDF-Layout</li>
+            <li>Kein externer Service</li>
+            <li>QR-Codes → scannbar in App</li>
+            <li>Server-side = schnell</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Exakte mm-Positionierung fummelig</li>
+            <li>Font-Embedding nötig</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option A"</code>
+      </div>
+    </article>
+
+    <!-- Option B: Puppeteer HTML-to-PDF -->
+    <article class="option-card option-b not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option B</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Puppeteer (HTML → PDF)</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="arch-diagram">
+          <div class="arch-layer"><div class="arch-box backend">API Route</div></div>
+          <div class="arch-arrow">↓ HTML Template</div>
+          <div class="arch-layer"><div class="arch-box service">Puppeteer (Headless Chrome)</div></div>
+          <div class="arch-arrow">↓ page.pdf()</div>
+          <div class="arch-layer"><div class="arch-box database">PDF Download</div></div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Du baust die Labels als HTML/CSS-Template, Puppeteer rendert sie in einem Headless Chrome zu einem pixelgenauen PDF. Volle CSS-Power (Flexbox, Grid, @page, @media print). Nachteil: Puppeteer ist eine fette Dependency (~300MB Chrome), braucht mehr RAM im Docker-Container, und ist langsamer.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Volle CSS-Power für Layout</li>
+            <li>Pixelgenaue Positionierung</li>
+            <li>Bekannte Technologie (HTML/CSS)</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>~300MB Chrome im Container</li>
+            <li>Langsamer als react-pdf</li>
+            <li>Mehr RAM-Verbrauch</li>
+            <li>Docker-Setup aufwendiger</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option B"</code>
+      </div>
+    </article>
+
+    <!-- Option C: jsPDF (Client-side) -->
+    <article class="option-card option-c not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option C</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">jsPDF (Client-side)</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="arch-diagram">
+          <div class="arch-layer"><div class="arch-box frontend">Browser</div></div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box frontend">jsPDF</div>
+            <div class="arch-box frontend">QRCode.js</div>
+          </div>
+          <div class="arch-arrow">↓ Blob</div>
+          <div class="arch-layer"><div class="arch-box database">Download im Browser</div></div>
+        </div>
+      </div>
+      <div class="option-summary">
+        PDF wird komplett im Browser generiert mit jsPDF. Kein Server-Call nötig, Daten kommen aus dem State. Schnell für kleine PDFs. Aber: jsPDF hat ein Low-Level-API (Koordinaten in mm), kein JSX, kein CSS. Für ein Grid aus Labels viel manuelle Positionierung. Fragil bei Layout-Änderungen.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Kein Server-Call nötig</li>
+            <li>Schnell und leichtgewichtig</li>
+            <li>Kein Backend-Dependency</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Low-Level-API (mm-Koordinaten)</li>
+            <li>Kein CSS, kein JSX</li>
+            <li>Layout-Änderungen fragil</li>
+            <li>Font-Support eingeschränkt</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option C"</code>
+      </div>
+    </article>
+
+    <!-- Option D: PDFKit (Node.js) -->
+    <article class="option-card option-d not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option D</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">PDFKit (Node.js, Low-Level)</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="arch-diagram">
+          <div class="arch-layer"><div class="arch-box backend">API Route</div></div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box backend">PDFKit</div>
+            <div class="arch-box service">qrcode</div>
+          </div>
+          <div class="arch-arrow">↓ Stream</div>
+          <div class="arch-layer"><div class="arch-box database">PDF Download</div></div>
+        </div>
+      </div>
+      <div class="option-summary">
+        PDFKit ist die Low-Level Node.js PDF-Library. Sehr leichtgewichtig, keine externen Dependencies. Aber wie jsPDF: Du arbeitest mit Koordinaten (x, y, width, height), kein deklaratives Layout. Solide für einfache Dokumente, für ein Label-Grid mit QR-Codes und Text aber mehr Aufwand als react-pdf.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Minimal, keine große Dependency</li>
+            <li>Server-side, schnell</li>
+            <li>Volle Kontrolle über jeden Pixel</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Imperatives API (Koordinaten)</li>
+            <li>Mehr Code als react-pdf</li>
+            <li>Layout-Änderungen aufwendig</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option D"</code>
+      </div>
+    </article>
+  </main>
+
+  <section class="comparison-section">
+    <h2>Vergleich</h2>
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="col-a col-recommended">Option A: react-pdf ⭐</th>
+            <th class="col-b">Option B: Puppeteer</th>
+            <th class="col-c">Option C: jsPDF</th>
+            <th class="col-d">Option D: PDFKit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Layout-Methode</td>
+            <td class="col-recommended">JSX (deklarativ)</td>
+            <td>HTML/CSS</td>
+            <td>Koordinaten (mm)</td>
+            <td>Koordinaten (pt)</td>
+          </tr>
+          <tr>
+            <td>Rendering</td>
+            <td class="col-recommended">Server-side</td>
+            <td>Server-side (Chrome)</td>
+            <td>Client-side</td>
+            <td>Server-side</td>
+          </tr>
+          <tr>
+            <td>Docker-Impact</td>
+            <td class="col-recommended">Minimal</td>
+            <td>+300MB Chrome</td>
+            <td>Keiner</td>
+            <td>Minimal</td>
+          </tr>
+          <tr>
+            <td>QR-Code-Support</td>
+            <td class="col-recommended">Via qrcode lib</td>
+            <td>Via HTML/Canvas</td>
+            <td>Via QRCode.js</td>
+            <td>Via qrcode lib</td>
+          </tr>
+          <tr>
+            <td>Layout-Flexibilität</td>
+            <td class="col-recommended">Hoch (Flexbox-like)</td>
+            <td>Sehr hoch (CSS)</td>
+            <td>Niedrig</td>
+            <td>Niedrig</td>
+          </tr>
+          <tr>
+            <td>Dev-Aufwand</td>
+            <td class="col-recommended">Niedrig</td>
+            <td>Mittel</td>
+            <td>Hoch</td>
+            <td>Hoch</td>
+          </tr>
+          <tr>
+            <td>Passt zum Stack</td>
+            <td class="col-recommended">Perfekt (React)</td>
+            <td>Okay</td>
+            <td>Okay</td>
+            <td>Okay</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <p>Sag Claude: <strong>"Option A"</strong>, <strong>"Option C aber [Änderung]"</strong>, oder <strong>"Mehr Optionen"</strong></p>
+    <p>Entscheidung ändern: <strong>"bei Entscheidung 6 will ich Option B"</strong></p>
+  </div>
+</body>
+</html>

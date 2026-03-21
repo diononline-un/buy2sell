@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entscheidung 5: Artikel-Detailansicht & Felder — Buy2Sell</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.visual { background: #fce7f3; color: #be185d; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eff6ff; color: #1d4ed8; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #bfdbfe; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #6366f1; box-shadow: 0 4px 20px rgba(99,102,241,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #7c3aed; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+    .visual-preview { padding: 1rem; background: #f8fafc; min-height: 280px; display: flex; align-items: flex-start; justify-content: center; flex: 1; }
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; }
+    .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0; padding-left: 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-claude { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; position: sticky; top: 0; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #7c3aed; }
+    .comparison-table th.col-b { color: #0891b2; }
+    .comparison-table th.col-c { color: #059669; }
+    .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table .col-recommended { background: #fffbeb !important; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #6366f1; text-decoration: none; max-width: 1200px; }
+    .back-link:hover { text-decoration: underline; }
+    /* Card preview styles */
+    .mock-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; width: 100%; max-width: 300px; font-size: 0.6rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .mock-img { background: linear-gradient(135deg, #c7d2fe, #e0e7ff); height: 60px; display: flex; align-items: center; justify-content: center; color: #6366f1; font-weight: 700; font-size: 0.65rem; }
+    .mock-body { padding: 8px; }
+    .mock-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; gap: 4px; }
+    .mock-label { color: #94a3b8; font-size: 0.55rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+    .mock-value { color: #1e293b; font-weight: 600; font-size: 0.6rem; }
+    .mock-title { font-weight: 700; font-size: 0.7rem; color: #0f172a; margin-bottom: 4px; }
+    .mock-badge { display: inline-block; padding: 1px 6px; border-radius: 999px; font-size: 0.5rem; font-weight: 700; }
+    .mock-badge.green { background: #dcfce7; color: #16a34a; }
+    .mock-badge.yellow { background: #fef9c3; color: #ca8a04; }
+    .mock-badge.blue { background: #dbeafe; color: #2563eb; }
+    .mock-badge.red { background: #fee2e2; color: #dc2626; }
+    .mock-badge.gray { background: #f1f5f9; color: #64748b; }
+    .mock-divider { border: none; border-top: 1px solid #f1f5f9; margin: 4px 0; }
+    .mock-section-label { font-size: 0.5rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin: 4px 0 2px; }
+    .mock-tags { display: flex; gap: 3px; flex-wrap: wrap; }
+    .mock-progress { height: 4px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 2px; }
+    .mock-progress-fill { height: 100%; border-radius: 99px; }
+    .mock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← Alle Entscheidungen</a>
+  <header>
+    <span class="decision-number">Entscheidung 5 von 7</span>
+    <h1>Artikel-Detailansicht & Felder</h1>
+    <span class="category-badge visual">Visuell</span>
+    <p class="decision-description">
+      Du hast viele Felder genannt: Bilder, Titel, Beschreibung, Farbe, Größe, EK USD, EK EUR, Status, Platform, Zielpreis, Verkaufspreis, tatsächlicher Verkaufspreis, Bewertung, Daten etc. Die Challenge: Alles unterbringen ohne dass es überladen wird. Die Frage ist wie wir die Felder gruppieren und priorisieren.
+    </p>
+    <p class="instruction">
+      Sag Claude: <strong>"Option B"</strong> · <strong>"Option A aber [Änderung]"</strong> · <strong>"Mehr Optionen"</strong>
+    </p>
+  </header>
+
+  <main class="options-grid">
+    <!-- Option A: Kompakte Card mit Tabs -->
+    <article class="option-card option-a chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option A</span>
+          <div class="card-badges">
+            <span class="recommended-badge">Empfohlen</span>
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Kompakte Card + Slide-Over Detail</h2>
+      </div>
+      <div class="visual-preview">
+        <div style="display: flex; gap: 8px; width: 100%;">
+          <!-- Card in List -->
+          <div class="mock-card" style="flex: 1;">
+            <div style="font-size: 0.5rem; font-weight: 700; color: #94a3b8; padding: 4px 8px 0; text-transform: uppercase; letter-spacing: 0.08em;">Listenansicht (kompakt)</div>
+            <div class="mock-img" style="height: 45px; margin: 4px 8px; border-radius: 6px;">Foto</div>
+            <div class="mock-body" style="padding: 4px 8px 8px;">
+              <div class="mock-title" style="font-size: 0.6rem;">Nike Dunk Low Panda</div>
+              <div class="mock-row">
+                <span class="mock-badge blue">Gr. 42</span>
+                <span class="mock-badge gray">Schwarz</span>
+                <span class="mock-badge green">Lager</span>
+              </div>
+              <hr class="mock-divider">
+              <div class="mock-grid">
+                <div class="mock-row" style="flex-direction: column; align-items: flex-start;">
+                  <span class="mock-label">EK</span>
+                  <span class="mock-value">€32.50</span>
+                </div>
+                <div class="mock-row" style="flex-direction: column; align-items: flex-start;">
+                  <span class="mock-label">Ziel</span>
+                  <span class="mock-value" style="color: #059669;">€65.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Slide-over Detail -->
+          <div class="mock-card" style="flex: 1.2;">
+            <div style="font-size: 0.5rem; font-weight: 700; color: #94a3b8; padding: 4px 8px 0; text-transform: uppercase; letter-spacing: 0.08em;">Slide-Over (alle Details)</div>
+            <div class="mock-body" style="padding: 6px 8px;">
+              <div class="mock-section-label">Produkt</div>
+              <div class="mock-row"><span class="mock-label">ID</span><span class="mock-value" style="font-family: monospace;">B2S-2603-0042</span></div>
+              <div class="mock-row"><span class="mock-label">Titel</span><span class="mock-value">Nike Dunk Low</span></div>
+              <div class="mock-row"><span class="mock-label">Farbe/Größe</span><span class="mock-value">Schwarz / 42</span></div>
+              <hr class="mock-divider">
+              <div class="mock-section-label">Einkauf</div>
+              <div class="mock-row"><span class="mock-label">EK (USD)</span><span class="mock-value">$18.00</span></div>
+              <div class="mock-row"><span class="mock-label">+ Domestic</span><span class="mock-value">$2.50</span></div>
+              <div class="mock-row"><span class="mock-label">+ Intl. Anteil</span><span class="mock-value">$12.00</span></div>
+              <div class="mock-row"><span class="mock-label">EK (EUR)</span><span class="mock-value" style="color: #dc2626;">€32.50</span></div>
+              <hr class="mock-divider">
+              <div class="mock-section-label">Verkauf</div>
+              <div class="mock-row"><span class="mock-label">Zielpreis</span><span class="mock-value">€65.00</span></div>
+              <div class="mock-row"><span class="mock-label">Eingestellt</span><span class="mock-value">€59.00</span></div>
+              <div class="mock-row"><span class="mock-label">Platform</span><span class="mock-badge blue">Vinted</span></div>
+              <div class="mock-row"><span class="mock-label">Tage online</span><span class="mock-value">12d</span></div>
+              <div class="mock-row"><span class="mock-label">Gepusht</span><span class="mock-value">3x</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Die Listenansicht zeigt nur das Wichtigste: Bild, Titel, Variante, Status, EK und Zielpreis. Klick auf einen Artikel öffnet ein Slide-Over-Panel (von rechts), das ALLE Details in Sektionen zeigt: Produkt, Einkauf, Verkauf, Historie. So bleibt die Liste clean und du hast trotzdem alles auf einen Klick.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Liste bleibt scanbar und clean</li>
+            <li>Alle Felder im Detail erreichbar</li>
+            <li>Slide-Over = kein Seitenwechsel</li>
+            <li>Sektionen halten Ordnung</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Slide-Over auf Mobile eng</li>
+            <li>2-Klick-Logik (Liste → Detail)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option A"</code>
+      </div>
+    </article>
+
+    <!-- Option B: Inline-Expand -->
+    <article class="option-card option-b not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option B</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Table View + Inline-Expand</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="mock-card" style="width: 100%; max-width: 340px;">
+          <div style="font-size: 0.5rem; font-weight: 700; color: #94a3b8; padding: 4px 8px 0; text-transform: uppercase; letter-spacing: 0.08em;">Tabelle mit Expand-Row</div>
+          <div class="mock-body" style="padding: 4px;">
+            <!-- Header -->
+            <div style="display: grid; grid-template-columns: 20px 40px 1fr 50px 50px 40px; gap: 3px; padding: 3px 4px; font-size: 0.5rem; font-weight: 700; color: #94a3b8; border-bottom: 1px solid #e2e8f0; text-transform: uppercase;">
+              <span></span><span>Img</span><span>Titel</span><span>EK</span><span>Ziel</span><span>Status</span>
+            </div>
+            <!-- Row 1 (collapsed) -->
+            <div style="display: grid; grid-template-columns: 20px 40px 1fr 50px 50px 40px; gap: 3px; padding: 4px; font-size: 0.55rem; align-items: center; border-bottom: 1px solid #f8fafc;">
+              <span style="color: #94a3b8;">▸</span>
+              <div style="width: 28px; height: 28px; background: #e0e7ff; border-radius: 4px;"></div>
+              <span style="font-weight: 600;">Dunk Low</span>
+              <span>€32</span>
+              <span style="color: #059669;">€65</span>
+              <span class="mock-badge green" style="font-size: 0.45rem;">Lager</span>
+            </div>
+            <!-- Row 2 (expanded) -->
+            <div style="display: grid; grid-template-columns: 20px 40px 1fr 50px 50px 40px; gap: 3px; padding: 4px; font-size: 0.55rem; align-items: center; background: #f8fafc; border-left: 3px solid #6366f1;">
+              <span style="color: #6366f1;">▾</span>
+              <div style="width: 28px; height: 28px; background: #c7d2fe; border-radius: 4px;"></div>
+              <span style="font-weight: 600;">AJ1 Chicago</span>
+              <span>€28</span>
+              <span style="color: #059669;">€56</span>
+              <span class="mock-badge yellow" style="font-size: 0.45rem;">Listed</span>
+            </div>
+            <!-- Expanded details -->
+            <div style="padding: 6px 8px 6px 28px; background: #f1f5f9; font-size: 0.5rem; border-left: 3px solid #6366f1; border-bottom: 1px solid #e2e8f0;">
+              <div class="mock-grid" style="gap: 2px;">
+                <div><span class="mock-label">Farbe:</span> Rot/Weiß</div>
+                <div><span class="mock-label">Größe:</span> 43</div>
+                <div><span class="mock-label">EK USD:</span> $15.00</div>
+                <div><span class="mock-label">Domestic:</span> $2.00</div>
+                <div><span class="mock-label">Intl:</span> $11.00</div>
+                <div><span class="mock-label">Platform:</span> Vinted</div>
+                <div><span class="mock-label">Eingestellt:</span> €49.00</div>
+                <div><span class="mock-label">Online seit:</span> 8d</div>
+              </div>
+            </div>
+            <!-- Row 3 -->
+            <div style="display: grid; grid-template-columns: 20px 40px 1fr 50px 50px 40px; gap: 3px; padding: 4px; font-size: 0.55rem; align-items: center;">
+              <span style="color: #94a3b8;">▸</span>
+              <div style="width: 28px; height: 28px; background: #e0e7ff; border-radius: 4px;"></div>
+              <span style="font-weight: 600;">Yeezy 350</span>
+              <span>€22</span>
+              <span style="color: #059669;">€44</span>
+              <span class="mock-badge red" style="font-size: 0.45rem;">Keep</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Spreadsheet-Feeling: Alle Artikel in einer Tabelle mit den Key-Spalten sichtbar. Klick auf eine Zeile expandiert sie inline mit allen Details. Kein Slide-Over, kein Seitenwechsel. Sehr effizient zum Scannen und schnellen Vergleichen. Allerdings: Bilder-Galerie und ausführliche Details kommen in der Expand-Row schnell an Grenzen.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Viele Artikel schnell scannen</li>
+            <li>Spreadsheet-Workflow gewohnt</li>
+            <li>Kein Kontextwechsel</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Bilder-Galerie schwierig inline</li>
+            <li>Mobile-Experience schlecht</li>
+            <li>Viele Spalten → horizontal scrollen</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option B"</code>
+      </div>
+    </article>
+
+    <!-- Option C: Gallery Grid -->
+    <article class="option-card option-c not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option C</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Gallery Grid + Modal Detail</h2>
+      </div>
+      <div class="visual-preview">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; max-width: 280px;">
+          <div class="mock-card">
+            <div class="mock-img" style="height: 55px;">Foto</div>
+            <div class="mock-body" style="padding: 5px;">
+              <div style="font-size: 0.55rem; font-weight: 700;">Dunk Low Panda</div>
+              <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                <span style="font-size: 0.5rem; color: #64748b;">€32</span>
+                <span class="mock-badge green" style="font-size: 0.45rem;">Lager</span>
+              </div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-img" style="height: 55px; background: linear-gradient(135deg, #fecdd3, #ffe4e6);">Foto</div>
+            <div class="mock-body" style="padding: 5px;">
+              <div style="font-size: 0.55rem; font-weight: 700;">AJ1 Chicago</div>
+              <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                <span style="font-size: 0.5rem; color: #64748b;">€28</span>
+                <span class="mock-badge yellow" style="font-size: 0.45rem;">Listed</span>
+              </div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-img" style="height: 55px; background: linear-gradient(135deg, #d9f99d, #ecfccb);">Foto</div>
+            <div class="mock-body" style="padding: 5px;">
+              <div style="font-size: 0.55rem; font-weight: 700;">Yeezy 350</div>
+              <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                <span style="font-size: 0.5rem; color: #64748b;">€22</span>
+                <span class="mock-badge red" style="font-size: 0.45rem;">Keep</span>
+              </div>
+            </div>
+          </div>
+          <div class="mock-card">
+            <div class="mock-img" style="height: 55px; background: linear-gradient(135deg, #bfdbfe, #dbeafe);">Foto</div>
+            <div class="mock-body" style="padding: 5px;">
+              <div style="font-size: 0.55rem; font-weight: 700;">NB 550</div>
+              <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                <span style="font-size: 0.5rem; color: #64748b;">€18</span>
+                <span class="mock-badge green" style="font-size: 0.45rem;">Verkauft</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Visueller Fokus: Artikel als Bild-Cards in einem Grid — wie Vinted/Depop selbst. Klick öffnet ein zentriertes Modal mit allen Details, Bildergalerie oben, Felder darunter. Sieht am besten aus, aber du siehst weniger Daten auf einen Blick. Gut wenn du viel über die Bilder arbeitest.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Bilder im Fokus stehen</li>
+            <li>Feels wie Vinted/Depop</li>
+            <li>Schön auf Mobile</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Wenig Daten auf einen Blick</li>
+            <li>Schwer zu sortieren/filtern</li>
+            <li>Nicht effizient für Bulk-Arbeit</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option C"</code>
+      </div>
+    </article>
+
+    <!-- Option D: Kanban Board -->
+    <article class="option-card option-d not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option D</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Kanban Board (nach Status)</h2>
+      </div>
+      <div class="visual-preview">
+        <div style="display: flex; gap: 6px; width: 100%; max-width: 320px; overflow-x: auto;">
+          <!-- Column: Lager -->
+          <div style="min-width: 90px; flex: 1;">
+            <div style="font-size: 0.5rem; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; padding: 3px 6px; background: #dcfce7; border-radius: 4px; text-align: center;">Lager (3)</div>
+            <div class="mock-card" style="margin-bottom: 4px;">
+              <div class="mock-body" style="padding: 4px 6px;">
+                <div style="font-size: 0.5rem; font-weight: 700;">Dunk Low</div>
+                <div style="font-size: 0.45rem; color: #64748b;">€32 → €65</div>
+              </div>
+            </div>
+            <div class="mock-card" style="margin-bottom: 4px;">
+              <div class="mock-body" style="padding: 4px 6px;">
+                <div style="font-size: 0.5rem; font-weight: 700;">AF1</div>
+                <div style="font-size: 0.45rem; color: #64748b;">€15 → €30</div>
+              </div>
+            </div>
+          </div>
+          <!-- Column: Eingestellt -->
+          <div style="min-width: 90px; flex: 1;">
+            <div style="font-size: 0.5rem; font-weight: 800; color: #ca8a04; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; padding: 3px 6px; background: #fef9c3; border-radius: 4px; text-align: center;">Listed (2)</div>
+            <div class="mock-card" style="margin-bottom: 4px;">
+              <div class="mock-body" style="padding: 4px 6px;">
+                <div style="font-size: 0.5rem; font-weight: 700;">AJ1</div>
+                <div style="font-size: 0.45rem; color: #64748b;">€28 → €49</div>
+                <div style="font-size: 0.4rem; color: #dc2626;">8d online</div>
+              </div>
+            </div>
+          </div>
+          <!-- Column: Verkauft -->
+          <div style="min-width: 90px; flex: 1;">
+            <div style="font-size: 0.5rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; padding: 3px 6px; background: #dbeafe; border-radius: 4px; text-align: center;">Sold (1)</div>
+            <div class="mock-card" style="margin-bottom: 4px;">
+              <div class="mock-body" style="padding: 4px 6px;">
+                <div style="font-size: 0.5rem; font-weight: 700;">NB 550</div>
+                <div style="font-size: 0.45rem; color: #059669;">€18 → €42 ✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Artikel als Kanban-Board nach Status: Lager → Eingestellt → Verkauft → Keep/Verloren. Drag & Drop zum Status-Wechsel. Gibt dir sofort einen Überblick wo alles steht. Nachteil: Bei vielen Artikeln unübersichtlich, wenig Daten pro Card sichtbar, und die Detail-Ansicht braucht trotzdem ein Modal/Slide-Over.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Status-Überblick auf einen Blick</li>
+            <li>Drag & Drop für Status-Wechsel</li>
+            <li>Pipeline-Denken (wie Deals)</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Unübersichtlich bei 50+ Artikeln</li>
+            <li>Wenig Daten pro Card</li>
+            <li>Braucht trotzdem Detail-View</li>
+            <li>Sortieren/Filtern schwierig</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option D"</code>
+      </div>
+    </article>
+  </main>
+
+  <section class="comparison-section">
+    <h2>Vergleich</h2>
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="col-a col-recommended">Option A: Card+Slide-Over ⭐</th>
+            <th class="col-b">Option B: Table+Expand</th>
+            <th class="col-c">Option C: Gallery+Modal</th>
+            <th class="col-d">Option D: Kanban</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Infodichte Liste</td>
+            <td class="col-recommended">Mittel-Hoch</td>
+            <td>Hoch</td>
+            <td>Niedrig</td>
+            <td>Niedrig</td>
+          </tr>
+          <tr>
+            <td>Detail-Tiefe</td>
+            <td class="col-recommended">Alle Felder (Slide-Over)</td>
+            <td>Alle Felder (Expand)</td>
+            <td>Alle Felder (Modal)</td>
+            <td>Wenige (Card)</td>
+          </tr>
+          <tr>
+            <td>Bilder-Support</td>
+            <td class="col-recommended">Gut (Galerie im Slide)</td>
+            <td>Thumbnail only</td>
+            <td>Exzellent</td>
+            <td>Kein Platz</td>
+          </tr>
+          <tr>
+            <td>Mobile</td>
+            <td class="col-recommended">Gut (Fullscreen-Sheet)</td>
+            <td>Schlecht</td>
+            <td>Sehr gut</td>
+            <td>Mittel</td>
+          </tr>
+          <tr>
+            <td>Bulk-Arbeit</td>
+            <td class="col-recommended">Gut</td>
+            <td>Sehr gut</td>
+            <td>Schlecht</td>
+            <td>Mittel (Drag)</td>
+          </tr>
+          <tr>
+            <td>Sortieren/Filtern</td>
+            <td class="col-recommended">Ja</td>
+            <td>Exzellent</td>
+            <td>Möglich</td>
+            <td>Schwierig</td>
+          </tr>
+          <tr>
+            <td>Skaliert bei 100+ Items</td>
+            <td class="col-recommended">Ja</td>
+            <td>Ja</td>
+            <td>Ja</td>
+            <td>Nein</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <p>Sag Claude: <strong>"Option A"</strong>, <strong>"Option C aber [Änderung]"</strong>, oder <strong>"Mehr Optionen"</strong></p>
+    <p>Entscheidung ändern: <strong>"bei Entscheidung 4 will ich Option B"</strong></p>
+  </div>
+</body>
+</html>

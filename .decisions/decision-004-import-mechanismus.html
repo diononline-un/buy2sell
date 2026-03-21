@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entscheidung 4: Import-Mechanismus — Buy2Sell</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.interaction { background: #e0f2fe; color: #0369a1; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eff6ff; color: #1d4ed8; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #bfdbfe; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #6366f1; box-shadow: 0 4px 20px rgba(99,102,241,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #7c3aed; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+    .visual-preview { padding: 1.5rem; background: #f8fafc; min-height: 200px; display: flex; align-items: center; justify-content: center; flex: 1; }
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; }
+    .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0; padding-left: 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-claude { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; position: sticky; top: 0; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #7c3aed; }
+    .comparison-table th.col-b { color: #0891b2; }
+    .comparison-table th.col-c { color: #059669; }
+    .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table .col-recommended { background: #fffbeb !important; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #6366f1; text-decoration: none; max-width: 1200px; }
+    .back-link:hover { text-decoration: underline; }
+    .flow-container { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0.5rem; width: 100%; max-width: 280px; }
+    .flow-step { display: flex; align-items: center; gap: 10px; background: white; border: 2px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; font-size: 0.7rem; font-weight: 600; color: #334155; text-align: left; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .flow-step.highlight { border-color: #6366f1; background: #eff6ff; color: #1d4ed8; }
+    .flow-step-number { width: 22px; height: 22px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; flex-shrink: 0; }
+    .flow-step.highlight .flow-step-number { background: #6366f1; color: white; }
+    .flow-step-label { flex: 1; }
+    .flow-down-arrow { font-size: 1rem; color: #94a3b8; padding: 2px 0; text-align: center; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← Alle Entscheidungen</a>
+  <header>
+    <span class="decision-number">Entscheidung 4 von 7</span>
+    <h1>Import-Mechanismus</h1>
+    <span class="category-badge interaction">Interaktion</span>
+    <p class="decision-description">
+      Kernfrage: Wie kommen deine Einkäufe von 1688, CNFans, ACBuy, GTBuy etc. in die Datenbank? Du kaufst über verschiedene Agents, die alle unterschiedliche Formate haben. Du willst Screenshots oder Copy-Paste nutzen. Jeder Artikel braucht einen eigenen Eintrag — auch bei Mehrfachkäufen.
+    </p>
+    <p class="instruction">
+      Sag Claude: <strong>"Option B"</strong> · <strong>"Option A aber [Änderung]"</strong> · <strong>"Mehr Optionen"</strong>
+    </p>
+  </header>
+
+  <main class="options-grid">
+    <!-- Option A: Smart Paste + Manuell -->
+    <article class="option-card option-a chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option A</span>
+          <div class="card-badges">
+            <span class="recommended-badge">Empfohlen</span>
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Smart Paste + Manuelles Ergänzen</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="flow-container">
+          <div class="flow-step highlight">
+            <div class="flow-step-number">1</div>
+            <div class="flow-step-label">Bestellseite kopieren (Ctrl+A, Ctrl+C)</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step highlight">
+            <div class="flow-step-number">2</div>
+            <div class="flow-step-label">In Textarea einfügen → Parser erkennt Artikel</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">3</div>
+            <div class="flow-step-label">Preview: Erkannte Artikel prüfen/korrigieren</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">4</div>
+            <div class="flow-step-label">Menge angeben → Einzeleinträge erstellen</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">5</div>
+            <div class="flow-step-label">Haul/Batch zuweisen → Speichern</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Du kopierst den Text von der Agent-Bestellseite (CNFans, ACBuy etc.) und fügst ihn in ein großes Textfeld ein. Ein Parser versucht Artikelname, Preis (USD/CNY), Menge, Farbe/Größe zu erkennen. Du bekommst eine Preview-Tabelle, kannst korrigieren, und bestätigst. Pro Agent ein Parser-Template. Fehlende Infos ergänzt du manuell. Robust, kein AI nötig.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Kein externer Service nötig</li>
+            <li>Schnell für Bulk-Imports</li>
+            <li>Parser pro Agent anpassbar</li>
+            <li>100% offline / self-hosted</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Parser muss pro Agent gebaut werden</li>
+            <li>Wenn Agent-Layout ändert → Parser anpassen</li>
+            <li>Bilder müssen separat hochgeladen werden</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option A"</code>
+      </div>
+    </article>
+
+    <!-- Option B: Screenshot OCR + AI -->
+    <article class="option-card option-b not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option B</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Screenshot OCR + AI-Parsing</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="flow-container">
+          <div class="flow-step highlight">
+            <div class="flow-step-number">1</div>
+            <div class="flow-step-label">Screenshot(s) von Bestellung hochladen</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step highlight">
+            <div class="flow-step-number">2</div>
+            <div class="flow-step-label">AI Vision API extrahiert Artikeldaten</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">3</div>
+            <div class="flow-step-label">Preview prüfen + korrigieren</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">4</div>
+            <div class="flow-step-label">Bestätigen → Einträge erstellen</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Du machst Screenshots deiner Bestellungen und lädst sie hoch. Eine AI Vision API (OpenAI, Claude) liest die Artikeldaten aus den Bildern. Maximal bequem, funktioniert Agent-übergreifend ohne Parser-Pflege. Aber: braucht einen API-Key, kostet pro Call, und die Genauigkeit ist nicht 100% — du musst immer prüfen.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Maximale Bequemlichkeit</li>
+            <li>Kein Agent-spezifischer Parser nötig</li>
+            <li>Bilder direkt als Referenz nutzbar</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Braucht API-Key (OpenAI/Claude)</li>
+            <li>Kosten pro Import (~$0.01-0.05/Bild)</li>
+            <li>Nicht 100% zuverlässig</li>
+            <li>Nicht komplett self-hosted</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option B"</code>
+      </div>
+    </article>
+
+    <!-- Option C: Hybrid (Paste + Screenshot) -->
+    <article class="option-card option-c not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option C</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Hybrid: Smart Paste + Screenshot als Fallback</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="flow-container">
+          <div class="flow-step highlight">
+            <div class="flow-step-number">1</div>
+            <div class="flow-step-label">Text einfügen ODER Screenshot hochladen</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">2a</div>
+            <div class="flow-step-label">Text → Regex-Parser (offline)</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">2b</div>
+            <div class="flow-step-label">Screenshot → AI Vision (optional)</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">3</div>
+            <div class="flow-step-label">Preview → Korrigieren → Speichern</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Best of both worlds: Primär nutzt du Smart Paste (offline, kostenlos, schnell). Wenn ein Agent-Format nicht erkannt wird oder du nur Screenshots hast, schaltest du den AI-Import zu. So hast du die robuste Basis und den bequemen Fallback. AI-Key optional konfigurierbar in den Settings.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Flexibilität ohne Lock-in</li>
+            <li>Offline-first, AI optional</li>
+            <li>Beide Workflows abgedeckt</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Mehr Entwicklungsaufwand (2 Wege)</li>
+            <li>UI muss beide Flows sauber abbilden</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option C"</code>
+      </div>
+    </article>
+
+    <!-- Option D: Manuell + CSV -->
+    <article class="option-card option-d not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option D</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Manuell + CSV-Upload</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="flow-container">
+          <div class="flow-step">
+            <div class="flow-step-number">1</div>
+            <div class="flow-step-label">CSV-Vorlage runterladen</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step highlight">
+            <div class="flow-step-number">2</div>
+            <div class="flow-step-label">In Excel/Sheets Artikel eintragen</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">3</div>
+            <div class="flow-step-label">CSV hochladen → Einträge erstellen</div>
+          </div>
+          <div class="flow-down-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-step-number">4</div>
+            <div class="flow-step-label">Bilder nachträglich zuordnen</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Klassisch: Du trägst deine Artikel manuell in eine CSV-Vorlage ein oder nutzt ein Formular in der App. CSV-Upload für Bulk, Einzelformular für Quick-Adds. Kein Parsing, keine AI, keine Magie. Simpel und zuverlässig, aber am meisten manuelle Arbeit pro Haul.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Volle Kontrolle über jeden Eintrag</li>
+            <li>Kein Parser-Maintenance</li>
+            <li>CSV-Import ist universell</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Am meisten Handarbeit</li>
+            <li>Fehleranfällig bei vielen Artikeln</li>
+            <li>Kein Speed-Vorteil</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option D"</code>
+      </div>
+    </article>
+  </main>
+
+  <section class="comparison-section">
+    <h2>Vergleich</h2>
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="col-a col-recommended">Option A: Smart Paste ⭐</th>
+            <th class="col-b">Option B: Screenshot AI</th>
+            <th class="col-c">Option C: Hybrid</th>
+            <th class="col-d">Option D: Manuell+CSV</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Speed pro Haul</td>
+            <td class="col-recommended">Schnell</td>
+            <td>Schnell</td>
+            <td>Schnell</td>
+            <td>Langsam</td>
+          </tr>
+          <tr>
+            <td>Self-Hosted</td>
+            <td class="col-recommended">100%</td>
+            <td>Nein (API-Key)</td>
+            <td>Teilweise</td>
+            <td>100%</td>
+          </tr>
+          <tr>
+            <td>Kosten</td>
+            <td class="col-recommended">Kostenlos</td>
+            <td>~$0.01-0.05/Import</td>
+            <td>Optional</td>
+            <td>Kostenlos</td>
+          </tr>
+          <tr>
+            <td>Entwicklungsaufwand</td>
+            <td class="col-recommended">Mittel (Parser)</td>
+            <td>Niedrig (Prompt)</td>
+            <td>Hoch (beide Wege)</td>
+            <td>Niedrig</td>
+          </tr>
+          <tr>
+            <td>Wartung</td>
+            <td class="col-recommended">Parser pflegen</td>
+            <td>Prompt pflegen</td>
+            <td>Beides</td>
+            <td>Keine</td>
+          </tr>
+          <tr>
+            <td>Genauigkeit</td>
+            <td class="col-recommended">Hoch (deterministisch)</td>
+            <td>Gut (95%+)</td>
+            <td>Hoch</td>
+            <td>Perfekt (manuell)</td>
+          </tr>
+          <tr>
+            <td>MVP-Tauglichkeit</td>
+            <td class="col-recommended">Gut</td>
+            <td>Gut</td>
+            <td>Aufwendig</td>
+            <td>Sofort</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <p>Sag Claude: <strong>"Option A"</strong>, <strong>"Option C aber [Änderung]"</strong>, oder <strong>"Mehr Optionen"</strong></p>
+    <p>Entscheidung ändern: <strong>"bei Entscheidung 3 will ich Option B"</strong></p>
+  </div>
+</body>
+</html>

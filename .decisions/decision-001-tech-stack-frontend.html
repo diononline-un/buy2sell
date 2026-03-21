@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entscheidung 1: Tech Stack Frontend — Buy2Sell</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.technical { background: #ede9fe; color: #6d28d9; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eff6ff; color: #1d4ed8; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #bfdbfe; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #6366f1; box-shadow: 0 4px 20px rgba(99,102,241,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #7c3aed; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+    .visual-preview { padding: 1.5rem; background: #f8fafc; min-height: 200px; display: flex; align-items: center; justify-content: center; flex: 1; }
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; }
+    .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0; padding-left: 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-claude { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; position: sticky; top: 0; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #7c3aed; }
+    .comparison-table th.col-b { color: #0891b2; }
+    .comparison-table th.col-c { color: #059669; }
+    .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table .col-recommended { background: #fffbeb !important; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #6366f1; text-decoration: none; max-width: 1200px; }
+    .back-link:hover { text-decoration: underline; }
+    .arch-diagram { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0.5rem; width: 100%; }
+    .arch-layer { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; width: 100%; }
+    .arch-box { background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px 14px; font-size: 0.7rem; font-weight: 600; color: #334155; text-align: center; min-width: 70px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .arch-box.frontend { border-color: #7c3aed; color: #7c3aed; }
+    .arch-box.backend { border-color: #0891b2; color: #0891b2; }
+    .arch-box.database { border-color: #059669; color: #059669; }
+    .arch-box.service { border-color: #dc2626; color: #dc2626; }
+    .arch-arrow { font-size: 1rem; color: #94a3b8; text-align: center; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← Alle Entscheidungen</a>
+  <header>
+    <span class="decision-number">Entscheidung 1 von 7</span>
+    <h1>Tech Stack Frontend</h1>
+    <span class="category-badge technical">Technisch</span>
+    <p class="decision-description">
+      Die Basis-Entscheidung: Womit bauen wir die UI? Du brauchst ein responsives Dashboard, Galerie-Views, Formulare, Modals und ein Dashboard mit Charts. Alles läuft in Docker, also SSR ist nice-to-have aber kein Muss. Wichtig: schnelle Entwicklung, gute Component-Library-Anbindung und einfache Wartbarkeit.
+    </p>
+    <p class="instruction">
+      Sag Claude: <strong>"Option B"</strong> · <strong>"Option A aber [Änderung]"</strong> · <strong>"Mehr Optionen"</strong>
+    </p>
+  </header>
+
+  <main class="options-grid">
+    <!-- Option A: React + Vite -->
+    <article class="option-card option-a not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option A</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">React + Vite + Tailwind</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="arch-diagram">
+          <div class="arch-layer"><div class="arch-box frontend">React 19</div></div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box frontend">Vite</div>
+            <div class="arch-box frontend">Tailwind CSS</div>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box service">shadcn/ui</div>
+            <div class="arch-box service">Recharts</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Das größte Ökosystem. React + Vite ist schnell im Dev, Tailwind gibt dir maximale Flexibilität beim Styling. shadcn/ui liefert hochwertige, kopierbare Komponenten für Tables, Modals, Forms. Recharts für Dashboard-Charts. Riesige Community, jedes Problem ist gelöst.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Du maximale Flexibilität willst</li>
+            <li>Du React-Erfahrung hast</li>
+            <li>Viele 3rd-Party-Libs brauchst</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Mehr Boilerplate als Next.js</li>
+            <li>Routing muss manuell (React Router)</li>
+            <li>Kein SSR out of the box</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option A"</code>
+      </div>
+    </article>
+
+    <!-- Option B: Next.js -->
+    <article class="option-card option-b chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option B</span>
+          <div class="card-badges">
+            <span class="recommended-badge">Empfohlen</span>
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Next.js + Tailwind (Fullstack)</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="arch-diagram">
+          <div class="arch-layer"><div class="arch-box frontend">Next.js 15 (App Router)</div></div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box frontend">Tailwind CSS</div>
+            <div class="arch-box service">shadcn/ui</div>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box backend">API Routes</div>
+            <div class="arch-box backend">Server Actions</div>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer"><div class="arch-box database">Prisma ORM</div></div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Next.js als Fullstack-Lösung: Frontend UND Backend in einem Projekt. API Routes oder Server Actions ersetzen ein separates Backend. Tailwind + shadcn/ui für die UI. Prisma als ORM direkt angebunden. Ein Docker-Container für alles. Weniger Moving Parts, schnellere Entwicklung.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Du alles in einem Projekt willst</li>
+            <li>Kein separates Backend nötig</li>
+            <li>Schnelles MVP wichtig ist</li>
+            <li>File-based Routing spart Setup</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Next.js-spezifische Patterns lernen</li>
+            <li>Docker-Image etwas größer</li>
+            <li>Overkill wenn reines SPA reicht</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option B"</code>
+      </div>
+    </article>
+
+    <!-- Option C: Vue + Nuxt -->
+    <article class="option-card option-c not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option C</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Vue 3 + Nuxt 3 + Tailwind</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="arch-diagram">
+          <div class="arch-layer"><div class="arch-box frontend">Nuxt 3</div></div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box frontend">Vue 3</div>
+            <div class="arch-box frontend">Tailwind CSS</div>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box backend">Nitro Server</div>
+            <div class="arch-box service">Nuxt UI</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Vue 3 mit Nuxt als Fullstack-Framework. Ähnliches Konzept wie Next.js, aber im Vue-Ökosystem. Nuxt UI ist eine solide Komponentenbibliothek. Vue's Composition API ist clean und intuitiv. Gute Option wenn du Vue bevorzugst. Etwas kleineres Ökosystem als React, aber alles da was du brauchst.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Du Vue bevorzugst/kennst</li>
+            <li>Nuxt UI spart viel Arbeit</li>
+            <li>Einsteigerfreundlicher als React</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Weniger 3rd-Party-Libs als React</li>
+            <li>Kleinere Community für Edge Cases</li>
+            <li>Nuxt 3 hat noch einige Rough Edges</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option C"</code>
+      </div>
+    </article>
+
+    <!-- Option D: SvelteKit -->
+    <article class="option-card option-d not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option D</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">SvelteKit + Tailwind</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="arch-diagram">
+          <div class="arch-layer"><div class="arch-box frontend">SvelteKit</div></div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box frontend">Svelte 5</div>
+            <div class="arch-box frontend">Tailwind CSS</div>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-box backend">Server Routes</div>
+            <div class="arch-box service">Skeleton UI</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        SvelteKit ist das performanteste Framework mit dem geringsten Boilerplate. Kein Virtual DOM, kompiliert zu vanilla JS. Fullstack-fähig mit Server Routes. Svelte 5 Runes sind elegant. Nachteil: deutlich kleinstes Ökosystem, weniger fertige Komponenten, OCR/Chart-Libs dünner. Für ein Solo-Projekt ein Risiko.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Performance oberste Prio ist</li>
+            <li>Du minimalen Code willst</li>
+            <li>Lust auf modernes Framework</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Kleinstes Ökosystem der 4</li>
+            <li>Weniger fertige UI-Komponenten</li>
+            <li>AI-Coding-Support schwächer</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option D"</code>
+      </div>
+    </article>
+  </main>
+
+  <section class="comparison-section">
+    <h2>Vergleich</h2>
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="col-a">Option A: React+Vite</th>
+            <th class="col-b col-recommended">Option B: Next.js ⭐</th>
+            <th class="col-c">Option C: Vue+Nuxt</th>
+            <th class="col-d">Option D: SvelteKit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fullstack</td>
+            <td>Nein (separates Backend)</td>
+            <td class="col-recommended">Ja (API Routes + Server Actions)</td>
+            <td>Ja (Nitro Server)</td>
+            <td>Ja (Server Routes)</td>
+          </tr>
+          <tr>
+            <td>Komponentenbibliothek</td>
+            <td>shadcn/ui (top)</td>
+            <td class="col-recommended">shadcn/ui (top)</td>
+            <td>Nuxt UI (gut)</td>
+            <td>Skeleton UI (okay)</td>
+          </tr>
+          <tr>
+            <td>Ökosystem-Größe</td>
+            <td>Riesig</td>
+            <td class="col-recommended">Riesig</td>
+            <td>Groß</td>
+            <td>Klein</td>
+          </tr>
+          <tr>
+            <td>Docker-Komplexität</td>
+            <td>Braucht separates Backend</td>
+            <td class="col-recommended">Ein Container</td>
+            <td>Ein Container</td>
+            <td>Ein Container</td>
+          </tr>
+          <tr>
+            <td>AI-Coding-Support</td>
+            <td>Exzellent</td>
+            <td class="col-recommended">Exzellent</td>
+            <td>Gut</td>
+            <td>Mittel</td>
+          </tr>
+          <tr>
+            <td>Lernkurve</td>
+            <td>Mittel</td>
+            <td class="col-recommended">Mittel-Hoch</td>
+            <td>Niedrig-Mittel</td>
+            <td>Niedrig</td>
+          </tr>
+          <tr>
+            <td>MVP-Geschwindigkeit</td>
+            <td>Mittel</td>
+            <td class="col-recommended">Hoch</td>
+            <td>Hoch</td>
+            <td>Hoch</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <p>Sag Claude: <strong>"Option A"</strong>, <strong>"Option C aber [Änderung]"</strong>, oder <strong>"Mehr Optionen"</strong></p>
+    <p>Entscheidung ändern: <strong>"bei Entscheidung 1 will ich Option B"</strong></p>
+  </div>
+</body>
+</html>

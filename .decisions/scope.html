@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projekt-Scope - Buy2Sell</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; }
+    header h1 { font-size: 2rem; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; }
+    header .subtitle { font-size: 1.1rem; color: #475569; margin-top: 0.5rem; }
+    .badge-row { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
+    .badge { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .badge.tech { background: #ede9fe; color: #6d28d9; }
+    .badge.status { background: #ecfdf5; color: #059669; }
+    .badge.type { background: #e0f2fe; color: #0369a1; }
+    .section { background: white; border-radius: 16px; padding: 1.75rem 2rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
+    .section h2 { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #f1f5f9; }
+    .section h3 { font-size: 0.95rem; font-weight: 700; color: #334155; margin: 1.25rem 0 0.5rem; }
+    .section p { font-size: 0.9rem; color: #475569; line-height: 1.7; margin-bottom: 0.75rem; }
+    .section ul { list-style: none; padding: 0; }
+    .section li { font-size: 0.875rem; color: #475569; line-height: 1.6; padding: 0.3rem 0 0.3rem 1.25rem; position: relative; }
+    .section li::before { content: "\2192"; color: #6366f1; font-weight: 700; position: absolute; left: 0; }
+    .highlight-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0; }
+    .highlight-box p { color: #1d4ed8; margin: 0; font-size: 0.85rem; font-weight: 500; }
+    .highlight-box.warn { background: #fefce8; border-color: #fde68a; }
+    .highlight-box.warn p { color: #854d0e; }
+    .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .feature-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.25rem; }
+    .feature-card .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .feature-card h4 { font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 0.35rem; }
+    .feature-card p { font-size: 0.8rem; color: #64748b; margin: 0; line-height: 1.5; }
+    .feature-card.mvp { border-left: 3px solid #059669; }
+    .feature-card.later { border-left: 3px solid #94a3b8; opacity: 0.7; }
+    .story { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 1rem 1.25rem; margin: 0.75rem 0; }
+    .story p { color: #854d0e; margin: 0; font-size: 0.85rem; font-style: italic; }
+    .story .actor { font-weight: 700; font-style: normal; }
+    .stack-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+    .stack-table th { text-align: left; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #64748b; padding: 0.6rem 1rem; border-bottom: 2px solid #e2e8f0; }
+    .stack-table td { padding: 0.6rem 1rem; font-size: 0.85rem; color: #334155; border-bottom: 1px solid #f1f5f9; }
+    .stack-table td:first-child { font-weight: 600; color: #0f172a; }
+    .stack-table .new-field { background: #ecfdf5; }
+    .sprint { display: flex; align-items: flex-start; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9; }
+    .sprint:last-child { border-bottom: none; }
+    .sprint-num { width: 32px; height: 32px; border-radius: 999px; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+    .sprint-num.high { background: #059669; }
+    .sprint-num.mid { background: #f59e0b; }
+    .sprint-num.low { background: #94a3b8; }
+    .sprint-info h4 { font-size: 0.85rem; font-weight: 600; color: #0f172a; }
+    .sprint-info p { font-size: 0.8rem; color: #64748b; margin: 0.15rem 0 0; }
+    .sprint-tickets { font-size: 0.7rem; font-weight: 700; color: #6366f1; background: #ede9fe; padding: 2px 8px; border-radius: 999px; margin-left: auto; flex-shrink: 0; align-self: center; }
+    .out-of-scope li::before { content: "\2717"; color: #e11d48; }
+    .nav-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #6366f1; text-decoration: none; }
+    .nav-link:hover { text-decoration: underline; }
+    .compare-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.8rem; }
+    .compare-table th { text-align: left; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #64748b; padding: 0.5rem 0.75rem; border-bottom: 2px solid #e2e8f0; }
+    .compare-table td { padding: 0.5rem 0.75rem; color: #334155; border-bottom: 1px solid #f1f5f9; }
+    .compare-table td:first-child { font-weight: 600; color: #0f172a; }
+    .check { color: #059669; font-weight: 700; }
+    .cross { color: #e11d48; font-weight: 700; }
+    .flow-visual { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 1.5rem 0; }
+    .flow-step { background: white; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px 20px; font-size: 0.8rem; font-weight: 600; color: #334155; min-width: 280px; text-align: center; }
+    .flow-step.ai { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; }
+    .flow-step.user { border-color: #0891b2; color: #0891b2; background: #ecfeff; }
+    .flow-arrow { font-size: 1.2rem; color: #94a3b8; padding: 4px 0; }
+    @media (max-width: 640px) { .feature-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="nav-link">&#8594; Entscheidungs-Hub</a>
+    <header>
+      <h1>Buy2Sell</h1>
+      <p class="subtitle">Self-hosted Reselling-Tracker &#8212; vom Einkauf bis zum Profit</p>
+      <div class="badge-row">
+        <span class="badge tech">Next.js + Tailwind</span>
+        <span class="badge tech">Prisma + PostgreSQL</span>
+        <span class="badge tech">LLM Import-Agent</span>
+        <span class="badge type">Self-hosted</span>
+        <span class="badge status">Planung abgeschlossen</span>
+      </div>
+    </header>
+
+    <!-- VISION -->
+    <div class="section">
+      <h2>Was ist Buy2Sell?</h2>
+      <p>Eine selbst gehostete Webapp fuer Reseller, die regelmaessig Waren einkaufen (Flohmarkt, Haushaltsaufloesungen, Online-Lots, 1688 via ACBuy/GTBuy) und auf Plattformen wie eBay, Kleinanzeigen oder Vinted weiterverkaufen.</p>
+      <p>Das Problem: Ohne Tool verliert man den Ueberblick &#8212; was wurde wann fuer wie viel eingekauft, was ist noch da, was bringt tatsaechlich Profit? Welche Artikel sind Winner und lohnen sich zum Nachkaufen?</p>
+      <div class="highlight-box">
+        <p><strong>Kernversprechen:</strong> Du siehst sofort, wie profitabel jeder Einkauf war, welche Artikel noch liegen, wo dein Geld steckt und welche Produkte Winner sind &#8212; alles in einer App, die du selbst hostest und die dir gehoert.</p>
+      </div>
+    </div>
+
+    <!-- ZIELGRUPPE -->
+    <div class="section">
+      <h2>Zielgruppe</h2>
+      <p>Einzelne Reseller oder kleine Teams, die:</p>
+      <ul>
+        <li>Regelmaessig Hauls (Einkaufs-Batches) machen</li>
+        <li>Ueber Agents wie ACBuy und GTBuy von 1688/Taobao sourcen</li>
+        <li>Auf 1&#8211;4 Plattformen verkaufen</li>
+        <li>Den Ueberblick ueber Bestand, Kosten und Profit behalten wollen</li>
+        <li>Winner-Produkte erkennen und gezielt nachkaufen wollen</li>
+        <li>Keine Lust auf Excel oder ueberdimensionierte ERP-Systeme haben</li>
+        <li>Ihre Daten selbst hosten wollen (Privacy, kein Abo)</li>
+      </ul>
+    </div>
+
+    <!-- USER STORIES -->
+    <div class="section">
+      <h2>User Stories</h2>
+      <div class="story"><p><span class="actor">Als Reseller</span> will ich einen Haul mit Gesamtkosten anlegen und einzelne Artikel zuordnen, <strong>damit ich weiss, was jeder Artikel anteilig gekostet hat.</strong></p></div>
+      <div class="story"><p><span class="actor">Als Reseller</span> will ich Bestelldaten aus ACBuy oder GTBuy per Copy-Paste importieren und per KI-Agent parsen lassen, <strong>damit ich nicht jeden Artikel einzeln eintippen muss &#8212; auch nicht bei chinesischen Titeln.</strong></p></div>
+      <div class="story"><p><span class="actor">Als Reseller</span> will ich Artikel mit Brand und Artikelart (Hoodie, Phone Case, Peptid) taggen, <strong>damit ich mein Sortiment analysieren und filtern kann.</strong></p></div>
+      <div class="story"><p><span class="actor">Als Reseller</span> will ich den Verkauf inkl. Plattform, Gebuehren und Versandkosten erfassen, <strong>damit ich den echten Profit pro Artikel sehe.</strong></p></div>
+      <div class="story"><p><span class="actor">Als Reseller</span> will ich automatisch erkennen, welche Produkte ich mehrfach gekauft und profitabel verkauft habe, <strong>damit ich Winner-Items gezielt nachbestellen kann.</strong></p></div>
+      <div class="story"><p><span class="actor">Als Reseller</span> will ich ein Dashboard mit KPIs (Gesamtprofit, ROI, Avg. Marge), <strong>damit ich auf einen Blick sehe, wie mein Business laeuft.</strong></p></div>
+      <div class="story"><p><span class="actor">Als Reseller</span> will ich Labels mit QR-Code drucken, <strong>damit ich Artikel im Lager schnell identifizieren und scannen kann.</strong></p></div>
+      <div class="story"><p><span class="actor">Als Reseller</span> will ich nach Status filtern (nicht gelistet, gelistet, verkauft), <strong>damit ich weiss, was ich noch einstellen muss.</strong></p></div>
+    </div>
+
+    <!-- IMPORT AGENTS -->
+    <div class="section">
+      <h2>Import: ACBuy vs. GTBuy</h2>
+      <p>Die beiden Haupt-Sourcing-Agents liefern <strong>unterschiedliche Datenformate</strong>. Deshalb kein simpler Regex-Parser, sondern ein LLM-basierter Import-Agent.</p>
+      <table class="compare-table">
+        <tr><th>Feld</th><th>ACBuy</th><th>GTBuy</th></tr>
+        <tr><td>Order-ID</td><td>AO03074006278</td><td>IGT2602270741837971</td></tr>
+        <tr><td>Item-ID</td><td class="check">AI03074008499</td><td class="cross">nicht vorhanden</td></tr>
+        <tr><td>1688 Listing-ID</td><td class="cross">nicht sichtbar</td><td class="check">841863377445275</td></tr>
+        <tr><td>Titel-Sprache</td><td>Englisch</td><td>Chinesisch</td></tr>
+        <tr><td>Preis</td><td>$ USD</td><td>$ USD</td></tr>
+        <tr><td>Quantity</td><td>x1</td><td>x1, x2, x5</td></tr>
+        <tr><td>Color/Size</td><td>Color:geya black</td><td>Color: C / SIZE: 2XL</td></tr>
+        <tr><td>Custom Photo/Video</td><td class="cross">nein</td><td class="check">ja</td></tr>
+        <tr><td>Transaction Number</td><td class="check">842757865948982</td><td class="cross">nicht sichtbar</td></tr>
+      </table>
+
+      <h3>LLM Import-Agent Flow</h3>
+      <div class="flow-visual">
+        <div class="flow-step user">&#128203; User pastet rohen Text aus ACBuy oder GTBuy</div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step ai">&#129302; LLM erkennt Quelle (ACBuy/GTBuy/unbekannt)</div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step ai">&#129302; Felder extrahieren + chinesische Titel uebersetzen</div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step ai">&#129302; brand + itemType + category vorschlagen</div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step user">&#128064; Preview-Tabelle (editierbar) &#8212; User korrigiert</div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step user">&#9989; Bestaetigung &#8594; Bulk-Insert in DB</div>
+      </div>
+      <div class="highlight-box warn">
+        <p><strong>Fallback:</strong> Wenn LLM nicht verfuegbar, steht ein manuelles Formular bereit. Kosten pro Import: ~0.01&#8211;0.03$ (wenige hundert Token).</p>
+      </div>
+    </div>
+
+    <!-- WINNER ERKENNUNG -->
+    <div class="section">
+      <h2>Winner-Erkennung &amp; Grouping</h2>
+      <p>Artikel, die mehrfach gekauft und profitabel verkauft wurden, sind "Winner". Die Erkennung funktioniert ueber:</p>
+      <ul>
+        <li><strong>source1688Id</strong> &#8212; die originale 1688-Listing-ID ist der beste Grouping-Key (beide Agents referenzieren dieselben Listings)</li>
+        <li><strong>sourceItemId</strong> &#8212; ACBuy Item-ID als Fallback-Grouping</li>
+        <li><strong>brand + itemType</strong> &#8212; fuer uebergreifende Analyse (z.B. "Alle Nike Hoodies")</li>
+      </ul>
+      <p>Daraus lassen sich algorithmisch ableiten:</p>
+      <ul>
+        <li>Wie oft nachgekauft (Reorder Count)</li>
+        <li>Durchschnittliche Marge pro Produkt</li>
+        <li>Sell-Through-Rate (verkauft vs. auf Lager)</li>
+        <li>Winner-Score als Kombination dieser Metriken</li>
+      </ul>
+      <div class="highlight-box">
+        <p><strong>Kein extra "Product"-Model noetig.</strong> Das Grouping passiert ueber source1688Id &#8212; alle Items mit derselben ID sind dasselbe Produkt. Einfach, robust, keine manuelle Verknuepfung.</p>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="section">
+      <h2>Features &#8212; MVP vs. Spaeter</h2>
+      <div class="feature-grid">
+        <div class="feature-card mvp"><div class="icon">&#128230;</div><h4>Haul-Management</h4><p>Hauls anlegen, bearbeiten, loeschen. Gesamtkosten, Source, Datum. Artikel zuordnen.</p></div>
+        <div class="feature-card mvp"><div class="icon">&#129302;</div><h4>LLM Smart Import</h4><p>Paste aus ACBuy/GTBuy. KI erkennt Quelle, parst Felder, uebersetzt chinesisch, schlaegt brand + itemType vor.</p></div>
+        <div class="feature-card mvp"><div class="icon">&#127991;</div><h4>Item-Verwaltung</h4><p>Card-Grid + Slide-Over. Status-Workflow, Bilder, Tags, Brand, ItemType, Filter &amp; Suche.</p></div>
+        <div class="feature-card mvp"><div class="icon">&#128176;</div><h4>Verkaufs-Tracking</h4><p>Sale erfassen mit Preis, Plattform, Gebuehren, Versand. Auto-Profit-Berechnung.</p></div>
+        <div class="feature-card mvp"><div class="icon">&#128202;</div><h4>Dashboard</h4><p>KPI-Cards oben, Haul-Drilldown darunter, Plattform-Breakdown, Zeitraum-Filter.</p></div>
+        <div class="feature-card mvp"><div class="icon">&#128196;</div><h4>Label-Druck</h4><p>PDF mit QR-Code + Item-ID + Kurzname. Server-side via @react-pdf/renderer.</p></div>
+        <div class="feature-card mvp"><div class="icon">&#11088;</div><h4>Winner-Erkennung</h4><p>Automatisches Grouping ueber source1688Id. Reorder-Count, Avg. Marge, Sell-Through-Rate.</p></div>
+        <div class="feature-card later"><div class="icon">&#128176;</div><h4>Algorithmische Preisvorschlaege</h4><p>VK-Empfehlung basierend auf bisherigen Margen gleicher Produkte. Post-MVP.</p></div>
+        <div class="feature-card later"><div class="icon">&#127769;</div><h4>Dark Mode</h4><p>Tailwind dark: Variante. Nicht MVP, einfach nachzuruesten.</p></div>
+        <div class="feature-card later"><div class="icon">&#128228;</div><h4>CSV-Export</h4><p>Verkaufsdaten exportieren fuer Steuer / Buchhaltung. Post-MVP.</p></div>
+      </div>
+    </div>
+
+    <!-- DATENMODELL -->
+    <div class="section">
+      <h2>Datenmodell</h2>
+      <table class="stack-table">
+        <tr><th>Model</th><th>Zweck</th><th>Wichtige Felder</th></tr>
+        <tr><td>Haul</td><td>Einkaufs-Batch</td><td>name, source, totalCost, date</td></tr>
+        <tr><td>Item</td><td>Einzelartikel</td><td>title, titleOriginal, category, condition, status, purchasePrice, askingPrice, storageLocation</td></tr>
+        <tr class="new-field"><td></td><td>+ Klassifikation</td><td>brand, itemType</td></tr>
+        <tr class="new-field"><td></td><td>+ Sourcing</td><td>sourceAgent (acbuy|gtbuy), sourceItemId, sourceOrderId, source1688Id, sourceUrl, variant, quantity</td></tr>
+        <tr><td>Image</td><td>Bilder pro Item</td><td>url, sortOrder, isPrimary</td></tr>
+        <tr><td>Sale</td><td>Verkaufstransaktion</td><td>salePrice, shippingCost, platformFee, saleDate</td></tr>
+        <tr><td>Platform</td><td>Verkaufskanal</td><td>name, feePercent</td></tr>
+        <tr><td>Tag</td><td>Freie Labels</td><td>name, color (m:n zu Item)</td></tr>
+      </table>
+      <div class="highlight-box" style="margin-top: 1rem;">
+        <p><strong>Profit-Formel:</strong> salePrice - purchasePrice - platformFee - shippingCost (berechnet, nicht gespeichert)</p>
+      </div>
+      <div class="highlight-box" style="margin-top: 0.5rem;">
+        <p><strong>Winner-Grouping:</strong> Items mit gleicher source1688Id = selbes Produkt. Kein extra Model noetig.</p>
+      </div>
+      <div class="highlight-box warn" style="margin-top: 0.5rem;">
+        <p><strong>Quantity-Handling:</strong> Bei qty &gt; 1 werden separate Items erzeugt (je 1 Stueck), damit jedes einzeln getrackt und verkauft werden kann.</p>
+      </div>
+    </div>
+
+    <!-- TECH STACK -->
+    <div class="section">
+      <h2>Tech Stack</h2>
+      <table class="stack-table">
+        <tr><th>Layer</th><th>Technologie</th><th>Warum</th></tr>
+        <tr><td>Frontend</td><td>Next.js 14 + Tailwind</td><td>Fullstack, App Router, RSC</td></tr>
+        <tr><td>Backend/API</td><td>Server Actions + Prisma</td><td>Kein REST/GraphQL Boilerplate, typsicher</td></tr>
+        <tr><td>Datenbank</td><td>PostgreSQL 16</td><td>Robust, JSON-Support, Prisma-kompatibel</td></tr>
+        <tr><td>Import</td><td>LLM API (OpenAI/Claude)</td><td>Parst ACBuy + GTBuy, uebersetzt, klassifiziert</td></tr>
+        <tr><td>Labels</td><td>@react-pdf/renderer</td><td>JSX-basiert, Server-side, kein Headless-Browser</td></tr>
+        <tr><td>Infra</td><td>Docker Compose</td><td>Ein Befehl startet alles, self-hosted ready</td></tr>
+      </table>
+    </div>
+
+    <!-- SPRINT PLAN -->
+    <div class="section">
+      <h2>Umsetzungsplan &#8212; 8 Sprints, 37 Tickets</h2>
+      <div class="sprint"><div class="sprint-num high">1</div><div class="sprint-info"><h4>Fundament</h4><p>Next.js init, Docker Compose, Prisma Schema (inkl. neue Felder), Seed, Basis-Layout</p></div><span class="sprint-tickets">T-001 &#8211; T-005</span></div>
+      <div class="sprint"><div class="sprint-num high">2</div><div class="sprint-info"><h4>Haul-Management</h4><p>CRUD fuer Hauls, Liste, Detailseite, Cascade Delete</p></div><span class="sprint-tickets">T-006 &#8211; T-009</span></div>
+      <div class="sprint"><div class="sprint-num high">3</div><div class="sprint-info"><h4>LLM Smart Import</h4><p>Paste-Textarea, LLM-Agent (Quelle erkennen, parsen, uebersetzen, klassifizieren), Preview-Tabelle, Bulk-Insert, Fallback-Formular</p></div><span class="sprint-tickets">T-010 &#8211; T-014</span></div>
+      <div class="sprint"><div class="sprint-num high">4</div><div class="sprint-info"><h4>Item-Verwaltung</h4><p>Card-Grid, Slide-Over, Status-Workflow, Bilder, Tags, Brand, ItemType, Filter</p></div><span class="sprint-tickets">T-015 &#8211; T-020</span></div>
+      <div class="sprint"><div class="sprint-num high">5</div><div class="sprint-info"><h4>Verkaufs-Tracking</h4><p>Sale erstellen, Auto-Status, Profit-Berechnung, Sale-Historie</p></div><span class="sprint-tickets">T-021 &#8211; T-024</span></div>
+      <div class="sprint"><div class="sprint-num mid">6</div><div class="sprint-info"><h4>Dashboard</h4><p>KPI-Cards, Haul-Drilldown, Plattform-Breakdown, Zeitraum-Filter</p></div><span class="sprint-tickets">T-025 &#8211; T-028</span></div>
+      <div class="sprint"><div class="sprint-num mid">7</div><div class="sprint-info"><h4>Labels</h4><p>QR-Code + ID Layout, PDF-Generation, Auswahl, Gedruckt-Flag</p></div><span class="sprint-tickets">T-029 &#8211; T-032</span></div>
+      <div class="sprint"><div class="sprint-num low">8</div><div class="sprint-info"><h4>Polish &amp; Extras</h4><p>Responsive, Dark Mode, Bulk-Aktionen, CSV-Export, Einstellungen</p></div><span class="sprint-tickets">T-033 &#8211; T-037</span></div>
+    </div>
+
+    <!-- OUT OF SCOPE -->
+    <div class="section">
+      <h2>Explizit nicht im Scope (v1)</h2>
+      <ul class="out-of-scope">
+        <li>Multi-User / Auth / Rollen &#8212; Single-User App, kein Login</li>
+        <li>Automatischer Plattform-Sync (eBay API, Vinted Scraping etc.)</li>
+        <li>Buchhaltungs-Features (Rechnungen, USt-Berechnung)</li>
+        <li>Mobile Native App &#8212; responsive Webapp reicht</li>
+        <li>Multi-Waehrung &#8212; erstmal nur USD (Agent-Preise), spaeter EUR</li>
+        <li>Benachrichtigungen / E-Mail-Integration</li>
+        <li>Algorithmische Preisvorschlaege (Datengrundlage wird aber schon angelegt)</li>
+      </ul>
+    </div>
+
+    <!-- ENTSCHEIDUNGEN -->
+    <div class="section">
+      <h2>Getroffene Entscheidungen (7/7)</h2>
+      <table class="stack-table">
+        <tr><th>#</th><th>Entscheidung</th><th>Gewaehlt</th><th>Kategorie</th></tr>
+        <tr><td>1</td><td>Frontend Framework</td><td>Next.js + Tailwind (Fullstack)</td><td>Technisch</td></tr>
+        <tr><td>2</td><td>Backend &amp; API</td><td>Server Actions + Prisma</td><td>Technisch</td></tr>
+        <tr><td>3</td><td>Datenbank</td><td>PostgreSQL</td><td>Technisch</td></tr>
+        <tr><td>4</td><td>Import-Mechanismus</td><td>LLM Smart Import (ACBuy + GTBuy)</td><td>Interaktion</td></tr>
+        <tr><td>5</td><td>Artikel-Detailansicht</td><td>Kompakte Card + Slide-Over</td><td>Visuell</td></tr>
+        <tr><td>6</td><td>Dashboard-Layout</td><td>KPI-First + Haul-Drilldown</td><td>Visuell</td></tr>
+        <tr><td>7</td><td>Label-PDF-Generation</td><td>@react-pdf/renderer (Server-side)</td><td>Technisch</td></tr>
+      </table>
+      <p style="margin-top: 1rem; font-size: 0.85rem;"><a href="index.html" style="color: #6366f1;">&#8594; Alle Entscheidungen im Detail anschauen</a></p>
+    </div>
+
+  </div>
+</body>
+</html>

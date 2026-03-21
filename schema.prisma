@@ -1,0 +1,145 @@
+// Buy2Sell — Prisma Schema (v2 — mit Sourcing, Brand, ItemType, Winner-Grouping)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- HAUL (Einkauf / Sourcing-Batch) ---
+
+model Haul {
+  id          String   @id @default(cuid())
+  name        String
+  source      String?
+  date        DateTime @default(now())
+  totalCost   Decimal  @db.Decimal(10, 2)
+  notes       String?
+  items       Item[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// --- ITEM (Einzelartikel) ---
+
+model Item {
+  id              String     @id @default(cuid())
+  title           String
+  titleOriginal   String?    @db.Text          // Originaltitel (z.B. chinesisch)
+  description     String?    @db.Text
+  brand           String?                       // Nike, Geya, Generic...
+  itemType        String?                       // Hoodie, Phone Case, Peptid...
+  category        String?
+  condition       Condition  @default(GOOD)
+  purchasePrice   Decimal?   @db.Decimal(10, 2)
+  askingPrice     Decimal?   @db.Decimal(10, 2)
+  status          ItemStatus @default(UNLISTED)
+  storageLocation String?
+  labelPrinted    Boolean    @default(false)
+  notes           String?    @db.Text
+
+  // Sourcing
+  sourceAgent     String?                       // "acbuy" | "gtbuy"
+  sourceItemId    String?                       // ACBuy AI-ID (Grouping Fallback)
+  sourceOrderId   String?                       // ACBuy AO-ID / GTBuy IGT-ID
+  source1688Id    String?                       // Original 1688 Listing ID (Winner-Grouping Key)
+  sourceUrl       String?
+  variant         String?                       // "Color:Black;Size:L"
+
+  haulId          String
+  haul            Haul       @relation(fields: [haulId], references: [id], onDelete: Cascade)
+
+  images          Image[]
+  tags            Tag[]
+  sales           Sale[]
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([status])
+  @@index([haulId])
+  @@index([source1688Id])
+  @@index([brand])
+  @@index([itemType])
+}
+
+enum ItemStatus {
+  UNLISTED
+  LISTED
+  RESERVED
+  SOLD
+  RETURNED
+  KEPT
+  DISCARDED
+}
+
+enum Condition {
+  NEW
+  LIKE_NEW
+  VERY_GOOD
+  GOOD
+  ACCEPTABLE
+  PARTS_ONLY
+}
+
+// --- IMAGE ---
+
+model Image {
+  id        String  @id @default(cuid())
+  url       String
+  alt       String?
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  itemId    String
+  item      Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+}
+
+// --- SALE (Verkauf) ---
+
+model Sale {
+  id             String   @id @default(cuid())
+  salePrice      Decimal  @db.Decimal(10, 2)
+  shippingCost   Decimal? @db.Decimal(10, 2)
+  platformFee    Decimal? @db.Decimal(10, 2)
+  saleDate       DateTime @default(now())
+  buyerName      String?
+  trackingNumber String?
+  notes          String?
+
+  itemId         String
+  item           Item     @relation(fields: [itemId], references: [id])
+
+  platformId     String?
+  platform       Platform? @relation(fields: [platformId], references: [id])
+
+  createdAt      DateTime @default(now())
+
+  @@index([itemId])
+  @@index([platformId])
+}
+
+// --- PLATFORM (Verkaufskanal) ---
+
+model Platform {
+  id         String  @id @default(cuid())
+  name       String  @unique
+  url        String?
+  feePercent Decimal? @db.Decimal(5, 2)
+  color      String?
+  sales      Sale[]
+}
+
+// --- TAG ---
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  color String?
+  items Item[]
+}

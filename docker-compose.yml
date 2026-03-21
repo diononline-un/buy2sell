@@ -1,0 +1,33 @@
+# Buy2Sell - Docker Compose (Dev)
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: buy2sell
+      POSTGRES_PASSWORD: buy2sell_dev
+      POSTGRES_DB: buy2sell
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://buy2sell:buy2sell_dev@db:5432/buy2sell
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - db
+
+volumes:
+  pgdata:

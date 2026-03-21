@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entscheidung 6: Dashboard-Layout — Buy2Sell</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; padding: 2rem; line-height: 1.6; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .decision-number { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; }
+    header h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; margin-top: 0.25rem; }
+    .category-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.5rem; }
+    .category-badge.visual { background: #fce7f3; color: #be185d; }
+    .decision-description { font-size: 1rem; color: #475569; margin-top: 0.75rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .instruction { margin-top: 1rem; font-size: 0.85rem; background: #eff6ff; color: #1d4ed8; padding: 0.6rem 1.25rem; border-radius: 8px; display: inline-block; border: 1px solid #bfdbfe; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto 3rem; }
+    .option-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); border: 2px solid #e2e8f0; transition: all 0.2s ease; display: flex; flex-direction: column; position: relative; }
+    .option-card:hover { border-color: #6366f1; box-shadow: 0 4px 20px rgba(99,102,241,0.12); }
+    .card-header { padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 0.2rem; }
+    .card-header-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .option-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .option-card.option-a .option-label { color: #7c3aed; }
+    .option-card.option-b .option-label { color: #0891b2; }
+    .option-card.option-c .option-label { color: #059669; }
+    .option-card.option-d .option-label { color: #dc2626; }
+    .option-title { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
+    .recommended-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .chosen-badge { background: #059669; color: white; padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; display: none; }
+    .option-card.chosen .chosen-badge { display: inline-block; }
+    .option-card.chosen { border: 3px solid #059669; box-shadow: 0 4px 20px rgba(5,150,105,0.15); }
+    .option-card.not-chosen { opacity: 0.55; filter: grayscale(20%); }
+    .option-card.not-chosen:hover { opacity: 0.8; filter: none; }
+    .visual-preview { padding: 1rem; background: #f8fafc; min-height: 280px; display: flex; align-items: flex-start; justify-content: center; flex: 1; }
+    .option-summary { padding: 1rem 1.25rem; font-size: 0.875rem; color: #334155; line-height: 1.65; border-top: 1px solid #f1f5f9; }
+    .verdict { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #f1f5f9; }
+    .pros, .cons { padding: 1rem 1.25rem; }
+    .pros { border-right: 1px solid #f1f5f9; }
+    .pros h3, .cons h3 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pros h3 { color: #059669; }
+    .cons h3 { color: #e11d48; }
+    .verdict ul { list-style: none; padding: 0; }
+    .verdict li { font-size: 0.8rem; color: #475569; line-height: 1.5; padding: 0.15rem 0; padding-left: 1rem; position: relative; }
+    .pros li::before { content: "✓ "; color: #059669; font-weight: 700; position: absolute; left: 0; }
+    .cons li::before { content: "! "; color: #e11d48; font-weight: 700; position: absolute; left: 0; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .tell-claude { font-size: 0.75rem; color: #64748b; background: #f1f5f9; padding: 0.35rem 0.65rem; border-radius: 6px; display: block; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+    .comparison-section { max-width: 1200px; margin: 0 auto 3rem; }
+    .comparison-section h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .comparison-table-wrapper { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .comparison-table { width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem; }
+    .comparison-table th { padding: 0.85rem 1rem; text-align: left; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; white-space: nowrap; position: sticky; top: 0; background: white; }
+    .comparison-table th:first-child { position: sticky; left: 0; z-index: 2; background: #f8fafc; color: #64748b; }
+    .comparison-table th.col-a { color: #7c3aed; }
+    .comparison-table th.col-b { color: #0891b2; }
+    .comparison-table th.col-c { color: #059669; }
+    .comparison-table th.col-d { color: #dc2626; }
+    .comparison-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    .comparison-table td:first-child { font-weight: 600; color: #475569; position: sticky; left: 0; background: #f8fafc; }
+    .comparison-table tr:nth-child(even) td { background: #fafbfc; }
+    .comparison-table tr:nth-child(even) td:first-child { background: #f1f5f9; }
+    .comparison-table .col-recommended { background: #fffbeb !important; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .page-footer { max-width: 1200px; margin: 0 auto; text-align: center; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .page-footer p { font-size: 0.85rem; color: #64748b; margin: 0.3rem 0; }
+    .page-footer strong { color: #334155; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.85rem; color: #6366f1; text-decoration: none; max-width: 1200px; }
+    .back-link:hover { text-decoration: underline; }
+    /* Dashboard mock styles */
+    .mock-dash { background: white; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; font-size: 0.5rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .mock-kpi { display: flex; gap: 4px; padding: 6px; }
+    .mock-kpi-card { flex: 1; background: #f8fafc; border-radius: 6px; padding: 6px 8px; text-align: center; border: 1px solid #e2e8f0; }
+    .mock-kpi-value { font-size: 0.8rem; font-weight: 800; color: #0f172a; }
+    .mock-kpi-label { font-size: 0.45rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px; }
+    .mock-kpi-delta { font-size: 0.4rem; font-weight: 700; margin-top: 1px; }
+    .mock-kpi-delta.pos { color: #059669; }
+    .mock-kpi-delta.neg { color: #dc2626; }
+    .mock-chart { background: #f8fafc; margin: 4px 6px; border-radius: 6px; padding: 6px; border: 1px solid #e2e8f0; }
+    .mock-chart-title { font-size: 0.45rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .mock-bar-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+    .mock-bar-label { width: 40px; text-align: right; font-size: 0.45rem; color: #64748b; font-weight: 600; }
+    .mock-bar { height: 8px; border-radius: 4px; }
+    .mock-list-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.5rem; }
+    .mock-badge { display: inline-block; padding: 1px 5px; border-radius: 999px; font-size: 0.4rem; font-weight: 700; }
+    .mock-badge.green { background: #dcfce7; color: #16a34a; }
+    .mock-badge.yellow { background: #fef9c3; color: #ca8a04; }
+    .mock-badge.red { background: #fee2e2; color: #dc2626; }
+    @media (max-width: 768px) { .options-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← Alle Entscheidungen</a>
+  <header>
+    <span class="decision-number">Entscheidung 6 von 7</span>
+    <h1>Dashboard-Layout</h1>
+    <span class="category-badge visual">Visuell</span>
+    <p class="decision-description">
+      Das Dashboard ist dein Cockpit: Gesamt-P&L, Haul-Progress, Deadstock-Warnung, Top-Seller, Plattform-Performance. Die Frage ist wie wir die Infos priorisieren und layouten. Du willst wissen: Bin ich im Plus oder Minus? Welche Hauls laufen gut? Was liegt zu lange rum?
+    </p>
+    <p class="instruction">
+      Sag Claude: <strong>"Option B"</strong> · <strong>"Option A aber [Änderung]"</strong> · <strong>"Mehr Optionen"</strong>
+    </p>
+  </header>
+
+  <main class="options-grid">
+    <!-- Option A: KPI-First + Haul Drilldown -->
+    <article class="option-card option-a chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option A</span>
+          <div class="card-badges">
+            <span class="recommended-badge">Empfohlen</span>
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">KPI-First + Haul-Drilldown</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="mock-dash" style="max-width: 320px;">
+          <!-- KPI Row -->
+          <div class="mock-kpi">
+            <div class="mock-kpi-card">
+              <div class="mock-kpi-value" style="color: #dc2626;">-€284</div>
+              <div class="mock-kpi-label">Gesamt P&L</div>
+              <div class="mock-kpi-delta neg">3 Hauls offen</div>
+            </div>
+            <div class="mock-kpi-card">
+              <div class="mock-kpi-value">47</div>
+              <div class="mock-kpi-label">Artikel</div>
+              <div class="mock-kpi-delta pos">12 verkauft</div>
+            </div>
+            <div class="mock-kpi-card">
+              <div class="mock-kpi-value">€38</div>
+              <div class="mock-kpi-label">Avg. Gewinn</div>
+              <div class="mock-kpi-delta pos">+8% vs. Ziel</div>
+            </div>
+            <div class="mock-kpi-card">
+              <div class="mock-kpi-value" style="color: #f59e0b;">8</div>
+              <div class="mock-kpi-label">Deadstock</div>
+              <div class="mock-kpi-delta neg">&gt;30 Tage</div>
+            </div>
+          </div>
+          <!-- Haul Progress -->
+          <div class="mock-chart">
+            <div class="mock-chart-title">Haul-Progress</div>
+            <div class="mock-bar-row">
+              <span class="mock-bar-label">Haul #3</span>
+              <div style="flex:1; background: #e2e8f0; border-radius: 4px; height: 10px; display: flex; overflow: hidden;">
+                <div style="width: 60%; background: #059669;"></div>
+                <div style="width: 15%; background: #f59e0b;"></div>
+              </div>
+              <span style="font-size: 0.45rem; color: #64748b; width: 30px;">-€82</span>
+            </div>
+            <div class="mock-bar-row">
+              <span class="mock-bar-label">Haul #2</span>
+              <div style="flex:1; background: #e2e8f0; border-radius: 4px; height: 10px; display: flex; overflow: hidden;">
+                <div style="width: 85%; background: #059669;"></div>
+                <div style="width: 10%; background: #f59e0b;"></div>
+              </div>
+              <span style="font-size: 0.45rem; color: #059669; width: 30px;">+€41</span>
+            </div>
+            <div class="mock-bar-row">
+              <span class="mock-bar-label">Haul #1</span>
+              <div style="flex:1; background: #059669; border-radius: 4px; height: 10px;"></div>
+              <span style="font-size: 0.45rem; color: #059669; width: 30px;">+€156</span>
+            </div>
+          </div>
+          <!-- Alert Section -->
+          <div style="padding: 4px 6px;">
+            <div class="mock-chart-title" style="color: #dc2626;">⚠ Braucht Aufmerksamkeit</div>
+            <div class="mock-list-item">
+              <span style="font-weight: 600;">AJ4 Military Black</span>
+              <span class="mock-badge red">45d ohne Sale</span>
+            </div>
+            <div class="mock-list-item">
+              <span style="font-weight: 600;">Dunk Low Grey Fog</span>
+              <span class="mock-badge yellow">32d ohne Sale</span>
+            </div>
+          </div>
+          <!-- Top Sellers -->
+          <div style="padding: 4px 6px 6px;">
+            <div class="mock-chart-title" style="color: #059669;">🏆 Top Seller</div>
+            <div class="mock-list-item">
+              <span style="font-weight: 600;">Yeezy Slide</span>
+              <span style="color: #059669; font-weight: 700;">+€48 (2d)</span>
+            </div>
+            <div class="mock-list-item" style="border: none;">
+              <span style="font-weight: 600;">NB 550 Green</span>
+              <span style="color: #059669; font-weight: 700;">+€42 (5d)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Top: 4 KPI-Cards (Gesamt-P&L, Artikelcount, Avg. Gewinn, Deadstock-Warnung). Mitte: Haul-Progress-Bars zeigen pro Haul wie weit du bist (verkauft vs. offen) und ob du im Plus/Minus bist. Unten: Alert-Sektion (Artikel zu lange drin) und Top-Seller-Liste. Alles auf einen Blick, klickbar für Drilldown.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Sofort sehen: Plus oder Minus?</li>
+            <li>Haul-Progress auf einen Blick</li>
+            <li>Deadstock-Warnung prominent</li>
+            <li>Actionable: Was muss ich tun?</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Kein Platz für Zeitreihen-Charts</li>
+            <li>Plattform-Vergleich fehlt</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option A"</code>
+      </div>
+    </article>
+
+    <!-- Option B: Analytics-Heavy -->
+    <article class="option-card option-b not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option B</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Analytics-Heavy (Charts + Trends)</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="mock-dash" style="max-width: 320px;">
+          <div class="mock-kpi" style="gap: 3px;">
+            <div class="mock-kpi-card">
+              <div class="mock-kpi-value" style="color: #dc2626; font-size: 0.65rem;">-€284</div>
+              <div class="mock-kpi-label">P&L</div>
+            </div>
+            <div class="mock-kpi-card">
+              <div class="mock-kpi-value" style="font-size: 0.65rem;">12/47</div>
+              <div class="mock-kpi-label">Verkauft</div>
+            </div>
+          </div>
+          <!-- Line Chart Mock -->
+          <div class="mock-chart">
+            <div class="mock-chart-title">Gewinn-Trend (letzte 30 Tage)</div>
+            <div style="height: 50px; display: flex; align-items: flex-end; gap: 2px; padding-top: 4px;">
+              <div style="flex:1; background: #dc2626; height: 40px; border-radius: 2px 2px 0 0; opacity: 0.7;"></div>
+              <div style="flex:1; background: #dc2626; height: 35px; border-radius: 2px 2px 0 0; opacity: 0.7;"></div>
+              <div style="flex:1; background: #dc2626; height: 25px; border-radius: 2px 2px 0 0; opacity: 0.7;"></div>
+              <div style="flex:1; background: #dc2626; height: 15px; border-radius: 2px 2px 0 0; opacity: 0.7;"></div>
+              <div style="flex:1; background: #f59e0b; height: 8px; border-radius: 2px 2px 0 0; opacity: 0.7;"></div>
+              <div style="flex:1; background: #059669; height: 5px; border-radius: 2px 2px 0 0; opacity: 0.7;"></div>
+              <div style="flex:1; background: #059669; height: 12px; border-radius: 2px 2px 0 0; opacity: 0.7;"></div>
+              <div style="flex:1; background: #059669; height: 20px; border-radius: 2px 2px 0 0; opacity: 0.7;"></div>
+            </div>
+          </div>
+          <!-- Platform Breakdown -->
+          <div class="mock-chart">
+            <div class="mock-chart-title">Verkäufe nach Plattform</div>
+            <div class="mock-bar-row">
+              <span class="mock-bar-label">Vinted</span>
+              <div class="mock-bar" style="width: 70%; background: #6366f1;"></div>
+              <span style="font-size: 0.45rem;">7</span>
+            </div>
+            <div class="mock-bar-row">
+              <span class="mock-bar-label">Depop</span>
+              <div class="mock-bar" style="width: 30%; background: #ec4899;"></div>
+              <span style="font-size: 0.45rem;">3</span>
+            </div>
+            <div class="mock-bar-row">
+              <span class="mock-bar-label">eBay</span>
+              <div class="mock-bar" style="width: 20%; background: #f59e0b;"></div>
+              <span style="font-size: 0.45rem;">2</span>
+            </div>
+          </div>
+          <!-- Avg Days to Sell -->
+          <div class="mock-chart">
+            <div class="mock-chart-title">Avg. Tage bis Verkauf</div>
+            <div style="text-align: center; font-size: 0.9rem; font-weight: 800; color: #0f172a; padding: 4px;">14.2d</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Daten-getrieben: KPIs oben, darunter Gewinn-Trend als Zeitreihe, Plattform-Breakdown, durchschnittliche Verkaufszeit. Mehr Charts, weniger Listen. Gibt dir Trends und Patterns — aber weniger "was muss ich JETZT tun". Besser für Retrospektive als für tägliche Action.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Trends und Patterns erkennen</li>
+            <li>Plattform-Performance vergleichen</li>
+            <li>Zeitreihen-Analyse wichtig</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Weniger actionable</li>
+            <li>Braucht mehr Daten um sinnvoll zu sein</li>
+            <li>Kein Deadstock-Alert prominent</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option B"</code>
+      </div>
+    </article>
+
+    <!-- Option C: Haul-Centric -->
+    <article class="option-card option-c not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option C</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Haul-Centric (pro Haul ein Mini-Dashboard)</h2>
+      </div>
+      <div class="visual-preview">
+        <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 300px;">
+          <!-- Haul Card 1 -->
+          <div class="mock-dash">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid #f1f5f9;">
+              <div>
+                <div style="font-size: 0.65rem; font-weight: 700; color: #0f172a;">Haul #3 — CNFans März</div>
+                <div style="font-size: 0.45rem; color: #64748b;">15 Artikel · EK €480 · Versand €120</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.7rem; font-weight: 800; color: #dc2626;">-€82</div>
+                <div style="font-size: 0.4rem; color: #64748b;">8/15 verkauft</div>
+              </div>
+            </div>
+            <div style="padding: 4px 8px 6px;">
+              <div style="background: #e2e8f0; border-radius: 4px; height: 8px; display: flex; overflow: hidden;">
+                <div style="width: 53%; background: #059669;"></div>
+                <div style="width: 13%; background: #f59e0b;"></div>
+                <div style="width: 7%; background: #dc2626;"></div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 3px; font-size: 0.4rem; color: #64748b;">
+                <span>🟢 8 sold</span><span>🟡 2 listed</span><span>🔴 1 keep</span><span>⬜ 4 lager</span>
+              </div>
+            </div>
+          </div>
+          <!-- Haul Card 2 -->
+          <div class="mock-dash">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid #f1f5f9;">
+              <div>
+                <div style="font-size: 0.65rem; font-weight: 700; color: #0f172a;">Haul #2 — ACBuy Feb</div>
+                <div style="font-size: 0.45rem; color: #64748b;">10 Artikel · EK €320 · Versand €85</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.7rem; font-weight: 800; color: #059669;">+€41</div>
+                <div style="font-size: 0.4rem; color: #64748b;">9/10 verkauft</div>
+              </div>
+            </div>
+            <div style="padding: 4px 8px 6px;">
+              <div style="background: #e2e8f0; border-radius: 4px; height: 8px; display: flex; overflow: hidden;">
+                <div style="width: 90%; background: #059669;"></div>
+                <div style="width: 10%; background: #f59e0b;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Jeder Haul ist ein eigenes Mini-Dashboard: EK, Versand, Progress-Bar, P&L. Du scrollst durch deine Hauls und siehst sofort welcher läuft und welcher nicht. Klick öffnet den Haul mit allen Artikeln. Sehr intuitiv für dein Mental-Modell (du denkst in Hauls), aber Gesamt-Überblick fehlt oben.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Du in Hauls denkst</li>
+            <li>P&L pro Haul sofort sichtbar</li>
+            <li>Intuitiv und übersichtlich</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Kein Gesamt-P&L auf einen Blick</li>
+            <li>Cross-Haul-Vergleiche schwierig</li>
+            <li>Skaliert schlecht bei 20+ Hauls</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option C"</code>
+      </div>
+    </article>
+
+    <!-- Option D: Hybrid KPI + Haul + Alerts -->
+    <article class="option-card option-d not-chosen">
+      <div class="card-header">
+        <div class="card-header-top">
+          <span class="option-label">Option D</span>
+          <div class="card-badges">
+            <span class="chosen-badge">Gewählt</span>
+          </div>
+        </div>
+        <h2 class="option-title">Hybrid: KPIs + Haul-Cards + Alerts + Charts</h2>
+      </div>
+      <div class="visual-preview">
+        <div class="mock-dash" style="max-width: 320px;">
+          <!-- KPI Row -->
+          <div class="mock-kpi" style="gap: 3px;">
+            <div class="mock-kpi-card"><div class="mock-kpi-value" style="color: #dc2626; font-size: 0.6rem;">-€284</div><div class="mock-kpi-label">P&L</div></div>
+            <div class="mock-kpi-card"><div class="mock-kpi-value" style="font-size: 0.6rem;">12/47</div><div class="mock-kpi-label">Sold</div></div>
+            <div class="mock-kpi-card"><div class="mock-kpi-value" style="font-size: 0.6rem; color: #f59e0b;">8</div><div class="mock-kpi-label">Dead</div></div>
+            <div class="mock-kpi-card"><div class="mock-kpi-value" style="font-size: 0.6rem;">14d</div><div class="mock-kpi-label">Avg Sell</div></div>
+          </div>
+          <!-- Haul Mini Cards -->
+          <div style="padding: 3px 6px;">
+            <div class="mock-chart-title">Aktive Hauls</div>
+            <div style="display: flex; gap: 4px;">
+              <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 6px;">
+                <div style="font-size: 0.5rem; font-weight: 700;">#3 CNFans</div>
+                <div style="font-size: 0.6rem; font-weight: 800; color: #dc2626;">-€82</div>
+                <div style="background: #e2e8f0; border-radius: 2px; height: 4px; margin-top: 2px;"><div style="width: 53%; background: #059669; height: 100%; border-radius: 2px;"></div></div>
+              </div>
+              <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 6px;">
+                <div style="font-size: 0.5rem; font-weight: 700;">#2 ACBuy</div>
+                <div style="font-size: 0.6rem; font-weight: 800; color: #059669;">+€41</div>
+                <div style="background: #e2e8f0; border-radius: 2px; height: 4px; margin-top: 2px;"><div style="width: 90%; background: #059669; height: 100%; border-radius: 2px;"></div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Alerts + Platform side by side -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 3px 6px 6px;">
+            <div class="mock-chart" style="margin: 0;">
+              <div class="mock-chart-title" style="color: #dc2626;">⚠ Deadstock</div>
+              <div style="font-size: 0.45rem; color: #475569; padding: 2px 0; border-bottom: 1px solid #f1f5f9;">AJ4 Military · 45d</div>
+              <div style="font-size: 0.45rem; color: #475569; padding: 2px 0;">Dunk Grey · 32d</div>
+            </div>
+            <div class="mock-chart" style="margin: 0;">
+              <div class="mock-chart-title">Plattformen</div>
+              <div class="mock-bar-row" style="margin: 0;"><span style="font-size: 0.4rem; width: 30px;">Vinted</span><div class="mock-bar" style="width: 60%; background: #6366f1; height: 5px;"></div></div>
+              <div class="mock-bar-row" style="margin: 0;"><span style="font-size: 0.4rem; width: 30px;">Depop</span><div class="mock-bar" style="width: 25%; background: #ec4899; height: 5px;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-summary">
+        Alles auf einer Seite: KPIs oben, aktive Haul-Cards in der Mitte, Deadstock-Alerts und Plattform-Breakdown unten. Maximale Info-Dichte — aber Gefahr der Überladung. Braucht sauberes Layout und gutes Responsive Design um nicht chaotisch zu wirken.
+      </div>
+      <div class="verdict">
+        <div class="pros">
+          <h3>Funktioniert gut wenn</h3>
+          <ul>
+            <li>Alles auf einer Seite</li>
+            <li>Kombiniert alle Perspektiven</li>
+            <li>Kein Tab-Wechsel nötig</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h3>Achtung bei</h3>
+          <ul>
+            <li>Kann überladen wirken</li>
+            <li>Schwieriger responsive</li>
+            <li>Mehr Dev-Aufwand</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+        <code class="tell-claude">Sag Claude: "Option D"</code>
+      </div>
+    </article>
+  </main>
+
+  <section class="comparison-section">
+    <h2>Vergleich</h2>
+    <div class="comparison-table-wrapper">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="col-a col-recommended">Option A: KPI+Haul ⭐</th>
+            <th class="col-b">Option B: Analytics</th>
+            <th class="col-c">Option C: Haul-Centric</th>
+            <th class="col-d">Option D: Hybrid All</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gesamt-P&L sichtbar</td>
+            <td class="col-recommended">Ja (prominent)</td>
+            <td>Ja</td>
+            <td>Nein (nur pro Haul)</td>
+            <td>Ja</td>
+          </tr>
+          <tr>
+            <td>Haul-Progress</td>
+            <td class="col-recommended">Ja (Bars)</td>
+            <td>Nein</td>
+            <td>Ja (Cards)</td>
+            <td>Ja (Mini-Cards)</td>
+          </tr>
+          <tr>
+            <td>Deadstock-Warnung</td>
+            <td class="col-recommended">Ja (Alert-Liste)</td>
+            <td>Nein</td>
+            <td>Indirekt</td>
+            <td>Ja</td>
+          </tr>
+          <tr>
+            <td>Plattform-Vergleich</td>
+            <td class="col-recommended">Nein</td>
+            <td>Ja (Chart)</td>
+            <td>Nein</td>
+            <td>Ja (klein)</td>
+          </tr>
+          <tr>
+            <td>Zeitreihen/Trends</td>
+            <td class="col-recommended">Nein</td>
+            <td>Ja</td>
+            <td>Nein</td>
+            <td>Nein</td>
+          </tr>
+          <tr>
+            <td>Actionable</td>
+            <td class="col-recommended">Hoch</td>
+            <td>Mittel</td>
+            <td>Hoch</td>
+            <td>Hoch</td>
+          </tr>
+          <tr>
+            <td>Übersichtlichkeit</td>
+            <td class="col-recommended">Hoch</td>
+            <td>Mittel</td>
+            <td>Hoch</td>
+            <td>Mittel-Niedrig</td>
+          </tr>
+          <tr>
+            <td>Dev-Aufwand</td>
+            <td class="col-recommended">Mittel</td>
+            <td>Hoch (Charts)</td>
+            <td>Niedrig</td>
+            <td>Hoch</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <p>Sag Claude: <strong>"Option A"</strong>, <strong>"Option C aber [Änderung]"</strong>, oder <strong>"Mehr Optionen"</strong></p>
+    <p>Entscheidung ändern: <strong>"bei Entscheidung 5 will ich Option B"</strong></p>
+  </div>
+</body>
+</html>

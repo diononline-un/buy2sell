@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Read(//usr/local/bin/**)",
+      "Read(//c/Users/diono/.nvm/versions/**)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/diono/AppData/Roaming/**)",
+      "Read(//c/Users/diono/**)",
+      "Bash(cmd /c \"where npm 2>nul || echo NOT_FOUND\")",
+      "Bash(cmd /c \"where node & where npm & where npx\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(cmd /c \"where docker-compose & where docker\")",
+      "Bash(cmd /c 'echo %PATH%')",
+      "Bash(tr ';' '\\\\n')",
+      "Bash(cmd /c \"set PATH\")",
+      "Bash(powershell -Command \"Get-Command node,npm,npx,docker,docker-compose,python,python3 -ErrorAction SilentlyContinue | Select-Object Name,Source\")",
+      "Bash(head -3 find /c/Users/diono/AppData/Local/Microsoft/WinGet/Packages/Anthropic.ClaudeCode_Microsoft.Winget.Source_8wekyb3d8bbwe -name npm*)"
+    ]
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "projectName": "Buy2Sell",
+  "projectDescription": "Self-hosted Webapp zum Tracken von Reselling-Hauls inkl. Import, Artikelverwaltung, Verkaufs-Tracking, Label-Druck und Sales-Dashboard.",
+  "createdAt": "2026-03-21T12:00:00Z",
+  "decisions": [
+    {
+      "id": "decision-001",
+      "slug": "tech-stack-frontend",
+      "title": "Tech Stack Frontend",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "B",
+      "chosenTitle": "Next.js + Tailwind (Fullstack)",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "recommended": "B",
+      "htmlFile": "decision-001-tech-stack-frontend.html",
+      "decidedAt": "2026-03-21T12:01:00Z",
+      "summary": "Welches Frontend-Framework f\u00fcr die Webapp"
+    },
+    {
+      "id": "decision-002",
+      "slug": "backend-api",
+      "title": "Backend & API",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "Server Actions + Prisma",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "recommended": "A",
+      "htmlFile": "decision-002-backend-api.html",
+      "decidedAt": "2026-03-21T12:02:00Z",
+      "summary": "API-Layer und Business-Logik"
+    },
+    {
+      "id": "decision-003",
+      "slug": "datenbank",
+      "title": "Datenbank",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "PostgreSQL",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "recommended": "A",
+      "htmlFile": "decision-003-datenbank.html",
+      "decidedAt": "2026-03-21T12:03:00Z",
+      "summary": "Datenbank-Engine und Datenmodell"
+    },
+    {
+      "id": "decision-004",
+      "slug": "import-mechanismus",
+      "title": "Import-Mechanismus",
+      "category": "interaction",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "Smart Paste + Manuelles Erg\u00e4nzen",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "recommended": "A",
+      "htmlFile": "decision-004-import-mechanismus.html",
+      "decidedAt": "2026-03-21T12:04:00Z",
+      "summary": "Wie Artikel aus 1688/Agents importiert werden"
+    },
+    {
+      "id": "decision-005",
+      "slug": "artikel-detailansicht",
+      "title": "Artikel-Detailansicht & Felder",
+      "category": "visual",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "Kompakte Card + Slide-Over Detail",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "recommended": "A",
+      "htmlFile": "decision-005-artikel-detailansicht.html",
+      "decidedAt": "2026-03-21T12:05:00Z",
+      "summary": "Layout und Feldstruktur der Artikelkarte"
+    },
+    {
+      "id": "decision-006",
+      "slug": "dashboard-layout",
+      "title": "Dashboard-Layout",
+      "category": "visual",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "KPI-First + Haul-Drilldown",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "recommended": "A",
+      "htmlFile": "decision-006-dashboard-layout.html",
+      "decidedAt": "2026-03-21T12:06:00Z",
+      "summary": "Aufbau und Struktur des Sales-Dashboards"
+    },
+    {
+      "id": "decision-007",
+      "slug": "label-pdf-generation",
+      "title": "Label-PDF-Generation",
+      "category": "technical",
+      "status": "chosen",
+      "chosenOption": "A",
+      "chosenTitle": "@react-pdf/renderer (Server-side)",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "recommended": null,
+      "htmlFile": "decision-007-label-pdf-generation.html",
+      "decidedAt": "2026-03-21T12:10:00Z",
+      "summary": "Wie 4x8 Inch Labels pro Haul als PDF generiert werden"
+    }
+  ]
+}
